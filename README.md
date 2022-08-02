@@ -18,7 +18,8 @@ Use the console commands to change the HUD layout.
     - ``0`` - QuakeWorld
     - ``1`` - Vanilla
     - ``2`` - N64
-    - ``3`` - N64 with meshes instead of models, where supported
+    - ``3`` - N64 with meshes instead of models (FTE only, so not working)
+    - ``4`` - 2021 Rerelease
 - ``cl_hudswap`` - swap ammo/weapons locations
     - ``0`` - right
     - ``1`` - left

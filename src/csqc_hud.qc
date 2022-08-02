@@ -201,20 +201,21 @@ static void() Hud_Init
 		precache_pic(facetab[i], TRUE);
 };
 
-static void(vector pos, float value, float threshhold) Hud_DrawLargeValue =
+static void(vector pos, float value, float threshhold, string justify) Hud_DrawLargeValue =
 {
 	float c;
 	float len;
 	string s;
 	if (value < 0)
-		value = 0;	//hrm
+		value = 0;
 	if (value>999)
 		value = 999;
 
 	s = ftos(floor(value));
 	len = strlen(s);
 
-	pos_x += 24 * (3-len);	
+	if (justify == "right")
+		pos_x -= 24*len;
 
 	if (value <= threshhold)
 	{
@@ -223,7 +224,7 @@ static void(vector pos, float value, float threshhold) Hud_DrawLargeValue =
 		{
 			len--;
 			c = str2chr(s, len);
-			drawpic(pos+len * '24 0 0', anumber[c-'0'], '24 24 0', '1 1 1', 1, 0);
+			drawpic(pos+[len*24,0], anumber[c-'0'], '24 24 0', '1 1 1', 1, 0);
 		}
 	}
 	else
@@ -233,7 +234,7 @@ static void(vector pos, float value, float threshhold) Hud_DrawLargeValue =
 		{
 			len--;
 			c = str2chr(s, len);
-			drawpic(pos+len * '24 0 0', number[c-'0'], '24 24 0', '1 1 1', 1, 0);
+			drawpic(pos+[len*24,0], number[c-'0'], '24 24 0', '1 1 1', 1, 0);
 		}
 	}
 };
@@ -429,15 +430,15 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 	{	//n64-style
 		pos = [0, virtsize_y-24];
 		Hud_DrawFace(pos+[3*24,0]);
-		Hud_DrawLargeValue(pos, shealth, 25);
+		Hud_DrawLargeValue(pos, shealth, 25, "left");
 
 		if (sitems & (IT_INVULNERABILITY|IT_ARMOR1|IT_ARMOR2|IT_ARMOR3))
 		{
 			pos_y -= 24;
 			if (sitems & IT_INVULNERABILITY)
-				Hud_DrawLargeValue(pos, 999, 25);
+				Hud_DrawLargeValue(pos, 999, 25, "left");
 			else
-				Hud_DrawLargeValue(pos, getstatf(STAT_ARMOR), 25);
+				Hud_DrawLargeValue(pos, getstatf(STAT_ARMOR), 25, "left");
 			pos+=[3*24,0];
 			if (sitems & IT_INVULNERABILITY)
 				Hud_PicOrModel(pos, "gfx/disc", "progs/invulner.mdl", 0, 70);
@@ -458,7 +459,7 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 			Hud_PicOrModel(pos, "gfx/sb_rocket", "maps/b_rock1.bsp", 0, 80);
 		else if (sitems & IT_CELLS)
 			Hud_PicOrModel(pos, "gfx/sb_cells", "maps/b_batt1.bsp", 0, 80);
-		Hud_DrawLargeValue(pos-([24*3]), getstatf(STAT_AMMO), 10);
+		Hud_DrawLargeValue(pos-([24*3]), getstatf(STAT_AMMO), 10, "left");
 		return;
 	}
 	
@@ -468,11 +469,11 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 	if (sitems & IT_INVULNERABILITY)
 	{
 		drawpic(pos, "gfx/disc", '24 24 0', '1 1 1', 1, 0);
-		Hud_DrawLargeValue(pos+'24 0 0', 999, 25);
+		Hud_DrawLargeValue(pos+'24 0 0', 999, 25, "left");
 	}
 	else
 	{
-		Hud_DrawLargeValue(pos+'24 0 0', getstatf(STAT_ARMOR), 25);
+		Hud_DrawLargeValue(pos+'24 0 0', getstatf(STAT_ARMOR), 25, "left");
 		if (sitems & IT_ARMOR3)
 			drawpic(pos, "gfx/sb_armor3", '24 24 0', '1 1 1', 1, 0);
 		else if (sitems & IT_ARMOR2)
@@ -482,7 +483,7 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 	}
 
 	Hud_DrawFace(pos+'112 0 0');
-	Hud_DrawLargeValue(pos+'136 0 0', shealth, 25);
+	Hud_DrawLargeValue(pos+'136 0 0', shealth, 25, "left");
 
 	if (sitems & IT_SHELLS)
 		drawpic(pos+'224 0 0', "gfx/sb_shells", '24 24 0', '1 1 1', 1, 0);
@@ -492,12 +493,63 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 		drawpic(pos+'224 0 0', "gfx/sb_rocket", '24 24 0', '1 1 1', 1, 0);
 	else if (sitems & IT_CELLS)
 		drawpic(pos+'224 0 0', "gfx/sb_cells", '24 24 0', '1 1 1', 1, 0);
-	Hud_DrawLargeValue(pos+'248 0 0', getstatf(STAT_AMMO), 10);
+	Hud_DrawLargeValue(pos+'248 0 0', getstatf(STAT_AMMO), 10, "left");
+};
+
+static void Hud_DrawSBar2021(vector pos, vector virtsize)
+{
+	// pictures are 24 pixels square, and origin is top left
+	float picsize = 24;
+
+	// draw face
+	pos = [picsize, virtsize_y-(picsize*1.5)];
+	Hud_DrawFace(pos);
+
+	// draw health numbers
+	pos += [picsize*1.5,0];
+	Hud_DrawLargeValue(pos, shealth, 25, "left");
+
+	if (sitems & (IT_INVULNERABILITY|IT_ARMOR1|IT_ARMOR2|IT_ARMOR3))
+	{
+		// draw armor picture
+		pos = [picsize, virtsize_y-(picsize*1.5)];
+		pos -= [0,picsize*1.1];
+		if (sitems & IT_INVULNERABILITY)
+			Hud_PicOrModel(pos, "gfx/disc", "progs/invulner.mdl", 0, 70);
+		else if (sitems & IT_ARMOR3)
+			Hud_PicOrModel(pos, "gfx/sb_armor3", "progs/armor.mdl", 2, 70);
+		else if (sitems & IT_ARMOR2)
+			Hud_PicOrModel(pos, "gfx/sb_armor2", "progs/armor.mdl", 1, 70);
+		else if (sitems & IT_ARMOR1)
+			Hud_PicOrModel(pos, "gfx/sb_armor1", "progs/armor.mdl", 0, 70);
+
+		// draw armor numbers
+		pos += [picsize*1.5,0];
+		if (sitems & IT_INVULNERABILITY)
+			Hud_DrawLargeValue(pos, 999, 25, "left");
+		else
+			Hud_DrawLargeValue(pos, getstatf(STAT_ARMOR), 25, "left");
+	}
+
+	// draw ammo picture
+	pos = [virtsize_x-(picsize*2), virtsize_y-(picsize*1.5)];
+	if (sitems & IT_SHELLS)
+		Hud_PicOrModel(pos, "gfx/sb_shells", "maps/b_shell1.bsp", 0, 80);
+	else if (sitems & IT_NAILS)
+		Hud_PicOrModel(pos, "gfx/sb_nails", "maps/b_nail1.bsp", 0, 80);
+	else if (sitems & IT_ROCKETS)
+		Hud_PicOrModel(pos, "gfx/sb_rocket", "maps/b_rock1.bsp", 0, 80);
+	else if (sitems & IT_CELLS)
+		Hud_PicOrModel(pos, "gfx/sb_cells", "maps/b_batt1.bsp", 0, 80);
+
+	// draw ammo numbers
+	pos -= [(picsize*0.5),0]; // this one is a guess bc the numbers need to END at
+	Hud_DrawLargeValue(pos, getstatf(STAT_AMMO), 10, "right");
 };
 
 static void Hud_DrawIBar(vector pos, vector br)
 {
-	if (!autocvar(cl_sbar, 1) || autocvar(cl_sbar, 1) >= 2)
+	if (!autocvar(cl_sbar, 1) || autocvar(cl_sbar, 1) == 2 || autocvar(cl_sbar, 1) == 3)
 	{
 		//qw puts its ammo+weapons on the side. mimic that.
 		vector pos2, pos3;
@@ -512,7 +564,7 @@ static void Hud_DrawIBar(vector pos, vector br)
 			pos2_x += br_x-42;
 			pos3 = pos2 + [42-24,-44];
 		}
-		if (autocvar(cl_sbar, 1) >= 2)
+		if (autocvar(cl_sbar, 1) == 2 || autocvar(cl_sbar, 1) == 3)
 		{
 			pos3_y = 0;	//n64-style hud puts them at the top, apparently.
 			pos_x = br_x-320;	//align any keys+powerups as though the hud was aligned to the right.
@@ -762,16 +814,23 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 		if (scoreboard)
 			Hud_CoopScores_SBar(pos - '0 24 0');
 		else
-			Hud_DrawSBar(pos - '0 24 0', virtsize);
+		{
+			// if cl_sbar=0-3
+			if (autocvar(cl_sbar, 1) <= 3)
+				Hud_DrawSBar(pos - '0 24 0', virtsize);
+			else if (autocvar(cl_sbar, 1) == 4)
+				Hud_DrawSBar2021(pos - '0 24 0', virtsize);
+		}
 
 		if (autocvar(viewsize, 100) < 110)
-			Hud_DrawIBar(pos - '0 48 0', virtsize);
+			if (autocvar(cl_sbar, 1) <= 3)
+				Hud_DrawIBar(pos - '0 48 0', virtsize);
 	}
 
 	//if (autocvar(hud_matchtimer, 1))
 		//Hud_DrawMatchTime(virtsize);//todo add virtsize here too
 
-	if (cvar("teamplay"))
+	if (cvar("deathmatch") && cvar("teamplay"))
 		Hud_DrawTeamScores(virtsize);
 };
 
