@@ -1,0 +1,5 @@
+reset.sh
+*.lno
+*/*.lno
+*.log
+*/*.log
