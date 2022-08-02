@@ -10,6 +10,8 @@
 //	I have made attempts to avoid copying the engine code, however I will not be held liable if there's any GPL contagion.
 //	There is otherwise no license for the code in this file.
 
+// Original author unknown?
+// Edited by whipowill: added team scores, team scores update, and 2021 HUD
 
 /*autocvars:
 	cl_sbar: alternative layouts (sorry for this complication, but mneh).
@@ -498,7 +500,9 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 
 static void Hud_DrawSBar2021(vector pos, vector virtsize)
 {
-	// pictures are 24 pixels square, and origin is top left
+	// edited from the above function to mimic the 2021 rerelease. -whipowill
+
+	// pictures are 24 pixels square, and position is based on the top left
 	float picsize = 24;
 
 	// draw face
