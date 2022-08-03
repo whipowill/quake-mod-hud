@@ -10,9 +10,6 @@
 //	I have made attempts to avoid copying the engine code, however I will not be held liable if there's any GPL contagion.
 //	There is otherwise no license for the code in this file.
 
-// Original author unknown?
-// Edited by whipowill: added team scores, team scores update, and 2021 HUD
-
 /*autocvars:
 	cl_sbar: alternative layouts (sorry for this complication, but mneh).
 		0: QuakeWorld style hud
@@ -498,26 +495,28 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 	Hud_DrawLargeValue(pos+'248 0 0', getstatf(STAT_AMMO), 10, "left");
 };
 
-static void Hud_DrawSBar2021(vector pos, vector virtsize)
+static void Hud_DrawSBar2021(vector virtsize)
 {
 	// edited from the above function to mimic the 2021 rerelease. -whipowill
 
-	// pictures are 24 pixels square, and position is based on the top left
+	// for math
 	float picsize = 24;
+	float iconsize = 16;
+	float buffersize = 2;
+	float activebuttons;
+	vector pos;
 
 	// draw face
 	pos = [picsize, virtsize_y-(picsize*1.5)];
 	Hud_DrawFace(pos);
 
 	// draw health numbers
-	pos += [picsize*1.5,0];
-	Hud_DrawLargeValue(pos, shealth, 25, "left");
+	Hud_DrawLargeValue(pos+[picsize*1.5,0], shealth, 25, "left");
 
 	if (sitems & (IT_INVULNERABILITY|IT_ARMOR1|IT_ARMOR2|IT_ARMOR3))
 	{
 		// draw armor picture
-		pos = [picsize, virtsize_y-(picsize*1.5)];
-		pos -= [0,picsize*1.1];
+		pos -= [0,picsize+buffersize];
 		if (sitems & IT_INVULNERABILITY)
 			Hud_PicOrModel(pos, "gfx/disc", "progs/invulner.mdl", 0, 70);
 		else if (sitems & IT_ARMOR3)
@@ -528,11 +527,10 @@ static void Hud_DrawSBar2021(vector pos, vector virtsize)
 			Hud_PicOrModel(pos, "gfx/sb_armor1", "progs/armor.mdl", 0, 70);
 
 		// draw armor numbers
-		pos += [picsize*1.5,0];
 		if (sitems & IT_INVULNERABILITY)
-			Hud_DrawLargeValue(pos, 999, 25, "left");
+			Hud_DrawLargeValue(pos+[picsize*1.5,0], 999, 25, "left");
 		else
-			Hud_DrawLargeValue(pos, getstatf(STAT_ARMOR), 25, "left");
+			Hud_DrawLargeValue(pos+[picsize*1.5,0], getstatf(STAT_ARMOR), 25, "left");
 	}
 
 	// draw ammo picture
@@ -547,8 +545,72 @@ static void Hud_DrawSBar2021(vector pos, vector virtsize)
 		Hud_PicOrModel(pos, "gfx/sb_cells", "maps/b_batt1.bsp", 0, 80);
 
 	// draw ammo numbers
-	pos -= [(picsize*0.5),0]; // this one is a guess bc the numbers need to END at
-	Hud_DrawLargeValue(pos, getstatf(STAT_AMMO), 10, "right");
+	Hud_DrawLargeValue(pos-[(picsize*0.5),0], getstatf(STAT_AMMO), 10, "right");
+
+	// display rune keys
+	activebuttons = 0;
+	pos = [virtsize_x-(picsize*2)+picsize, virtsize_y-(picsize*1.5)-(buffersize*2)-iconsize];
+
+	if (sitems2 & IT2_RUNE4)
+	{
+		activebuttons++;
+		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil4", '8 16 0', '1 1 1', 1, 0);
+	}
+	if (sitems2 & IT2_RUNE3)
+	{
+		activebuttons++;
+		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil3", '8 16 0', '1 1 1', 1, 0);
+	}
+	if (sitems2 & IT2_RUNE2)
+	{
+		activebuttons++;
+		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil2", '8 16 0', '1 1 1', 1, 0);
+	}
+	if (sitems2 & IT2_RUNE1)
+	{
+		activebuttons++;
+		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil1", '8 16 0', '1 1 1', 1, 0);
+	}
+
+	// display icons
+	activebuttons = 0;
+	pos = [virtsize_x-(picsize*2)+picsize-iconsize, virtsize_y-(picsize*1.5)-(buffersize*2)];
+	if (sitems2 & (IT2_RUNE1 || IT2_RUNE2 || IT2_RUNE3 || IT2_RUNE4))
+	{
+		activebuttons++;
+		pos -= [0,buffersize];
+	}
+
+	if ((sitems & IT_KEY1))
+	{
+		activebuttons++;
+		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_key1", '16 16 0', '1 1 1', 1, 0);
+	}
+	if ((sitems & IT_KEY2))
+	{
+		activebuttons++;
+		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_key2", '16 16 0', '1 1 1', 1, 0);
+	}
+	if ((sitems & IT_INVISIBILITY))
+	{
+		activebuttons++;
+		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_invis", '16 16 0', '1 1 1', 1, 0);
+	}
+	if ((sitems & IT_INVULNERABILITY))
+	{
+		activebuttons++;
+		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_invuln", '16 16 0', '1 1 1', 1, 0);
+	}
+	if ((sitems & IT_SUIT))
+	{
+		activebuttons++;
+		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_suit", '16 16 0', '1 1 1', 1, 0);
+	}
+	if ((sitems & IT_QUAD))
+	{
+		activebuttons++;
+		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_quad", '16 16 0', '1 1 1', 1, 0);
+	}
 };
 
 static void Hud_DrawIBar(vector pos, vector br)
@@ -655,6 +717,61 @@ static void Hud_DrawIBar(vector pos, vector br)
 	*/
 };
 
+static void Hud_DrawIBar2021(vector virtsize)
+{
+	// for math
+	float picsize = 24;
+	float iconsize = 16;
+	float buffersize = 2;
+	float activebuttons;
+	vector pos;
+
+	// draw weapons
+	pos = [virtsize_x-(picsize*2), 0+(picsize*1.5)];
+	if (sitems & IT_SHOTGUN)
+	{
+		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeapon(0, pos+[0,(activebuttons*16)+buffersize]);
+		activebuttons++;
+	}
+	if (sitems & IT_SUPER_SHOTGUN)
+	{
+		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeapon(1, pos+[0,(activebuttons*16)+buffersize]);
+		activebuttons++;
+	}
+	if (sitems & IT_NAILGUN)
+	{
+		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeapon(2, pos+[0,(activebuttons*16)+buffersize]);
+		activebuttons++;
+	}
+	if (sitems & IT_SUPER_NAILGUN)
+	{
+		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeapon(3, pos+[0,(activebuttons*16)+buffersize]);
+		activebuttons++;
+	}
+	if (sitems & IT_GRENADE_LAUNCHER)
+	{
+		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeapon(4, pos+[0,(activebuttons*16)+buffersize]);
+		activebuttons++;
+	}
+	if (sitems & IT_ROCKET_LAUNCHER)
+	{
+		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeapon(5, pos+[0,(activebuttons*16)+buffersize]);
+		activebuttons++;
+	}
+	if (sitems & IT_LIGHTNING)
+	{
+		Hud_DrawAmmoCount(3, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos+[0,(activebuttons*16)+buffersize], 24, LIGHTNING_WIDTH);
+		activebuttons++;
+	}
+};
+
 static void(vector pos, string num) Hud_DrawMatchNumbers =
 {
 	float i;
@@ -734,13 +851,15 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 			// if cl_sbar=0-3
 			if (autocvar(cl_sbar, 1) <= 3)
 				Hud_DrawSBar(pos - '0 24 0', virtsize);
-			else if (autocvar(cl_sbar, 1) == 4)
-				Hud_DrawSBar2021(pos - '0 24 0', virtsize);
+			else
+				Hud_DrawSBar2021(virtsize);
 		}
 
 		if (autocvar(viewsize, 100) < 110)
 			if (autocvar(cl_sbar, 1) <= 3)
 				Hud_DrawIBar(pos - '0 48 0', virtsize);
+			else
+				Hud_DrawIBar2021(virtsize);
 	}
 
 	//if (autocvar(hud_matchtimer, 1))
