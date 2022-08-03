@@ -44,7 +44,8 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		string ping = getplayerkeyvalue(i, "ping");
 		vector top = stov(getplayerkeyvalue(i, "topcolor_rgb"));
 		vector bot = stov(getplayerkeyvalue(i, "bottomcolor_rgb"));
-		name = strconv(0,2,2, name);
+		//name = strconv(0,2,2, name);
+		ping = strconv(0,2,2, ping);
 		//FIXME: string team = getplayerkeyvalue(i, "team");	//QW team names do NOT match player colours.
 		/*Other interesting fields
 			pl 			- for packetloss
