@@ -834,19 +834,20 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 	//if (autocvar(hud_matchtimer, 1))
 		//Hud_DrawMatchTime(virtsize);//todo add virtsize here too
 
-	if (cvar("deathmatch") && cvar("teamplay"))
+	//if (deathmatch && teamplay)
+	if (autocvar(cl_teamscores, 0))
 		Hud_DrawTeamScores(virtsize);
 };
 
-/*
 void () CSQC_Parse_Event =
 {
-	local float ev, team;
+	local float ev;
 
 	ev = readbyte();
 
 	switch (ev)
 	{
+		/*
 		case PQC_MATCH_TIME:
 			matchtime_minutes = readbyte();
 			matchtime_seconds = readbyte();
@@ -893,9 +894,9 @@ void () CSQC_Parse_Event =
 				cl_teamscores[i].frags = 0;
 			}
 			break;
+		*/
 	}
 }
-*/
 
 //lame entry point, just so that we know when damage was taken
 float(float save, float take, vector dir) CSQC_Parse_Damage =

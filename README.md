@@ -1,10 +1,10 @@
 # HUD for Quake
 
-A Quake client-side mod for adding custom HUD layouts and team scores to the game.
+A Quake client-side mod for adding custom HUD layouts to the game.
 
 ![QSS-M with HUD mod](https://i.imgur.com/G1Qgweb.jpg)
 
-This mod only works on QuakeSpasm engines.  If the game is ``deathmatch`` and ``teamplay`` it will add the team scores to the top of the screen.  Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
+This mod only works on QuakeSpasm engines.  Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
 
 ## Install
 
@@ -12,14 +12,15 @@ This mod only works on QuakeSpasm engines.  If the game is ``deathmatch`` and ``
 
 ## Usage
 
-Use the console commands to change the HUD layout.
+Use the following console commands:
 
 - ``cl_sbar`` - change HUD layout
     - ``0`` - QuakeWorld style
     - ``1`` - Vanilla style
     - ``2`` - N64 style
-    - ``3`` - N64 style w/ meshes (FTE only, no worky)
+    - ``3`` - N64 style w/ meshes (FTE engines only, no worky)
     - ``4`` - 2021 Rerelease :star:
+- ``cl_teamscores`` - add combined team scores to screen
 
 ## Issues
 

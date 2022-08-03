@@ -115,12 +115,13 @@ void(vector virtmin, vector virtsize) Hud_Intermission =
 void(vector virtsize, float showscores) CSQC_DrawScores =
 {
 	if (intermission || showscores || getstatf(STAT_HEALTH) <= 0)
-		if (cvar("deathmatch"))
+		if (deathmatch)
 			Hud_DeathmatchScoreboard('0 0 0', virtsize);
 
 	if (intermission)
 	{
-		if (cvar("deathmatch") && cvar("teamplay"))
+		//if (deathmatch && teamplay)
+		if (autocvar(cl_teamscores, 0))
 			Hud_DrawTeamScores(virtsize); // function from csqc_hud.qc
 		else
 			Hud_Intermission('0 0 0', virtsize);
