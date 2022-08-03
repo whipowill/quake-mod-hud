@@ -112,19 +112,108 @@ void(vector virtmin, vector virtsize) Hud_Intermission =
 	Hud_DrawIntermissionNumber(pos+[144, 144], sprintf("%3.0f/%.0f", getstatf(STAT_KILLEDMONSTERS), getstatf(STAT_TOTALMONSTERS)));
 };
 
+void() Hud_UpdateTeamScores =
+{
+	float fraglimit = cvar("fraglimit");
+
+	// reset all team scores to zero
+	for (float t = 0 ; t < 14 ; t++)
+	{
+		cl_teamscores[t].is_team = 0;
+		cl_teamscores[t].bottomcolor = "";
+		cl_teamscores[t].frags = 0;
+	}
+
+	// foreach player (negative numbers are players sorted by frags)
+	float i = -1;
+	while (1)
+	{
+		string name = getplayerkeyvalue(i, "name");
+
+		if not (name) break; // end the loop, no more players
+
+		float frags = stof(getplayerkeyvalue(i, "frags"));
+		string bottomcolor = getplayerkeyvalue(i, "bottomcolor_rgb");
+
+		// loop thru cl_teamscores looking for bottom color match
+		float teamnum = 0;
+		float nextnum = 0;
+		for (float t = 0 ; t < 14 ; t++)
+		{
+			if (cl_teamscores[t].bottomcolor == bottomcolor)
+				teamnum = t;
+
+			if (cl_teamscores[t].bottomcolor == "")
+				nextnum = t;
+		}
+
+		// if no teamnum was found
+		if (!teamnum)
+		{
+			teamnum = nextnum;
+		}
+
+		cl_teamscores[teamnum].is_team = 1;
+		cl_teamscores[teamnum].bottomcolor = bottomcolor;
+		cl_teamscores[teamnum].frags += frags;
+
+		// next player
+		i--;
+	}
+}
+
+void(vector virtsize) Hud_DrawTeamScores =
+{
+	Hud_UpdateTeamScores();
+
+	local vector pos1, pos2;
+	local float i, n = 0;
+
+	float pos_x = virtsize_x / 2;
+
+	pos1_y = 0;
+	pos1_x = pos_x - 30;
+
+	pos2_y = 0;
+	pos2_x = pos_x;
+
+	//todo add more teams here...
+
+	for (i = 0 ; i < 14 ; i++)
+	{
+		if (cl_teamscores[i].is_team > 0)
+		{
+			n += 1;
+
+			if (n == 1)
+			{
+				drawfill(pos1+([0,0]), ([28,9]), stov(cl_teamscores[i].bottomcolor), 0.75, 0);
+				drawstring(pos1+([2,0]), strpad(-3, ftos(cl_teamscores[i].frags)), ([8,8]), ([1,1,1]),1,0);
+			}
+			else
+			{
+				drawfill(pos2+([0,0]), ([28,9]), stov(cl_teamscores[i].bottomcolor), 0.75, 0);
+				drawstring(pos2+([2,0]), strpad(-3, ftos(cl_teamscores[i].frags)), ([8,8]), ([1,1,1]),1,0);
+				break;
+			}
+		}
+	}
+};
+
 // called unless there's a menu/finale visible. also called during intermissions.
 void(vector virtsize, float showscores) CSQC_DrawScores =
 {
 	if (intermission || showscores || getstatf(STAT_HEALTH) <= 0)
+	{
 		if (deathmatch)
+		{
 			Hud_DeathmatchScoreboard('0 0 0', virtsize);
+			if (autocvar(cl_teamscores, 0))
+				Hud_DrawTeamScores(virtsize);
+		}
+	}
 
 	if (intermission)
-	{
-		//if (deathmatch && teamplay)
-		if (autocvar(cl_teamscores, 0))
-			Hud_DrawTeamScores(virtsize); // function from csqc_hud.qc
-		else
+		if (!deathmatch)
 			Hud_Intermission('0 0 0', virtsize);
-	}
 };
