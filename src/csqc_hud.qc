@@ -348,7 +348,7 @@ static void Hud_PicOrModel(vector topleft, string pic, string showmodel, float s
 {
 	vector sz = '24 24';
 #ifdef DP_QC_RENDER_SCENE	//requires fteextensions.qc instead of qsextensions.qc
-	if (autocvar(cl_sbar, 1) >= 3)
+	if (autocvar(cl_sbar, 4) >= 3)
 	if (checkextension("DP_QC_RENDER_SCENE"))
 	{
 		//reset view props and wipe entity lists
@@ -425,7 +425,7 @@ static void Hud_DrawFace(vector pos)
 
 static void Hud_DrawSBar(vector pos, vector virtsize)
 {
-	if (autocvar(cl_sbar, 1) >= 2)
+	if (autocvar(cl_sbar, 4) >= 2)
 	{	//n64-style
 		pos = [0, virtsize_y-24];
 		Hud_DrawFace(pos+[3*24,0]);
@@ -462,7 +462,7 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 		return;
 	}
 	
-	if (autocvar(cl_sbar, 1))
+	if (autocvar(cl_sbar, 4))
 		drawpic(pos, "gfx/sbar", '320 24 0', '1 1 1', autocvar(scr_sbaralpha, 0.75), 0);
 
 	if (sitems & IT_INVULNERABILITY)
@@ -615,7 +615,7 @@ static void Hud_DrawSBar2021(vector virtsize)
 
 static void Hud_DrawIBar(vector pos, vector br)
 {
-	if (!autocvar(cl_sbar, 1) || autocvar(cl_sbar, 1) == 2 || autocvar(cl_sbar, 1) == 3)
+	if (!autocvar(cl_sbar, 4) || autocvar(cl_sbar, 4) == 2 || autocvar(cl_sbar, 4) == 3)
 	{
 		//qw puts its ammo+weapons on the side. mimic that.
 		vector pos2, pos3;
@@ -630,7 +630,7 @@ static void Hud_DrawIBar(vector pos, vector br)
 			pos2_x += br_x-42;
 			pos3 = pos2 + [42-24,-44];
 		}
-		if (autocvar(cl_sbar, 1) == 2 || autocvar(cl_sbar, 1) == 3)
+		if (autocvar(cl_sbar, 4) == 2 || autocvar(cl_sbar, 4) == 3)
 		{
 			pos3_y = 0;	//n64-style hud puts them at the top, apparently.
 			pos_x = br_x-320;	//align any keys+powerups as though the hud was aligned to the right.
@@ -849,14 +849,14 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 		else
 		{
 			// if cl_sbar=0-3
-			if (autocvar(cl_sbar, 1) <= 3)
+			if (autocvar(cl_sbar, 4) <= 3)
 				Hud_DrawSBar(pos - '0 24 0', virtsize);
 			else
 				Hud_DrawSBar2021(virtsize);
 		}
 
 		if (autocvar(viewsize, 100) < 110)
-			if (autocvar(cl_sbar, 1) <= 3)
+			if (autocvar(cl_sbar, 4) <= 3)
 				Hud_DrawIBar(pos - '0 48 0', virtsize);
 			else
 				Hud_DrawIBar2021(virtsize);
