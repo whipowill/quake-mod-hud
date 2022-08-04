@@ -270,7 +270,7 @@ static void(float type, vector pos, float drawback, float weapnum = -1) Hud_Draw
 		if (is_active)
 			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], 1, 0);
 		else
-			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .5, 0);
+			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .75, 0);
 	}
 };
 
