@@ -208,7 +208,7 @@ void(vector virtsize, float showscores) CSQC_DrawScores =
 		if (deathmatch)
 		{
 			Hud_DeathmatchScoreboard('0 0 0', virtsize);
-			if (autocvar(cl_teamscores, 0))
+			if (autocvar(cl_teams, 0))
 				Hud_DrawTeamScores(virtsize);
 		}
 	}

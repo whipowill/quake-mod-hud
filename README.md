@@ -17,10 +17,8 @@ Use the following console commands:
 - ``cl_sbar`` - change HUD layout
     - ``0`` - QuakeWorld style
     - ``1`` - Vanilla style
-    - ``2`` - N64 style
-    - ``3`` - N64 style w/ meshes (FTE engines only, no worky)
-    - ``4`` - 2021 Rerelease :star:
-- ``cl_teamscores`` - add combined team scores to screen
+    - ``2`` - N64 / 2021 style :star:
+- ``cl_teams 1`` - change scoreboard to team mode (not auto-detected from server atm)
 
 ## Issues
 

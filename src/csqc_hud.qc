@@ -14,8 +14,7 @@
 	cl_sbar: alternative layouts (sorry for this complication, but mneh).
 		0: QuakeWorld style hud
 		1: Vanilla style hud
-		2: n64-style hud
-		3: n64-style with meshes instead of models, where supported.
+		2: N64 / 2021 Rerelease style hud
 	cl_hudswap: QW/n64 ammo+weapons are on the
 		0: right
 		1: left
@@ -238,8 +237,12 @@ static void(vector pos, float value, float threshhold, string justify) Hud_DrawL
 	}
 };
 
-static void(float type, vector pos, float drawback) Hud_DrawAmmoCount =
+static void(float type, vector pos, float drawback, float weapnum = -1) Hud_DrawAmmoCount =
 {
+	// detect if this is weapon being used
+	float is_active = 0;
+	if (sweapon == (1<<weapnum)) is_active = 1;
+
 	string s;
 	float value;
 	float len;
@@ -264,7 +267,10 @@ static void(float type, vector pos, float drawback) Hud_DrawAmmoCount =
 	{
 		len--;
 		c = str2chr(s, len);
-		drawcharacter(pos+len * '8 0 0', (18-'0') + c, '8 8 0', '1 1 1', 1, 0);
+		if (is_active)
+			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], 1, 0);
+		else
+			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .5, 0);
 	}
 };
 
@@ -346,46 +352,6 @@ static void(vector pos) Hud_CoopScores_SBar =
 
 static void Hud_PicOrModel(vector topleft, string pic, string showmodel, float showskin, float speed)
 {
-	vector sz = '24 24';
-#ifdef DP_QC_RENDER_SCENE	//requires fteextensions.qc instead of qsextensions.qc
-	if (autocvar(cl_sbar, 4) >= 3)
-	if (checkextension("DP_QC_RENDER_SCENE"))
-	{
-		//reset view props and wipe entity lists
-		clearscene();
-
-		//set up the various view details, set up the renderer to be a little larger than the intended size... it avoids harsh cuts.
-		setviewprop(VF_MIN, topleft - sz);
-		setviewprop(VF_SIZE, sz * 3);
-		setviewprop(VF_DRAWENGINESBAR, FALSE);
-		setviewprop(VF_DRAWCROSSHAIR, FALSE);
-		setviewprop(VF_DRAWWORLD, FALSE);
-		setviewprop(VF_AFOV, 30);	//a small fov reduces perspective distortions without making it look like its isometric.
-		setviewprop(VF_ANGLES, '15 0 0');	//angle downwards slightly
-		makevectors('15 0 0');
-		setviewprop(VF_ORIGIN, v_forward*-256);	//and move the camera away so that we can position the model at the center without needing to worry about the tilt.
-
-		//spawn a (reusable) entity for our scene
-		static entity hudpicent;
-		if (!hudpicent)
-			hudpicent = spawn();
-		precache_model(showmodel);
-		setmodel(hudpicent, showmodel);
-		hudpicent.angles_y = cltime*speed;
-		hudpicent.skin = showskin;
-		makevectors(hudpicent.angles);
-		//make sure its centered
-		vector org = (hudpicent.maxs+hudpicent.mins)*0.5;
-		setorigin(hudpicent, - v_forward*org_x + v_right*org_y - v_up*org_z);
-		//and now copy it into the scene
-		addentity(hudpicent);
-
-		//and ask the engine to actually draw that single-entity scene. Think of this as a drawpic call.
-		renderscene();
-
-		return;
-	}
-#endif
 	drawpic(topleft, pic, '24 24 0', '1 1 1', 1, 0);
 };
 
@@ -425,44 +391,7 @@ static void Hud_DrawFace(vector pos)
 
 static void Hud_DrawSBar(vector pos, vector virtsize)
 {
-	if (autocvar(cl_sbar, 4) >= 2)
-	{	//n64-style
-		pos = [0, virtsize_y-24];
-		Hud_DrawFace(pos+[3*24,0]);
-		Hud_DrawLargeValue(pos, shealth, 25, "left");
-
-		if (sitems & (IT_INVULNERABILITY|IT_ARMOR1|IT_ARMOR2|IT_ARMOR3))
-		{
-			pos_y -= 24;
-			if (sitems & IT_INVULNERABILITY)
-				Hud_DrawLargeValue(pos, 999, 25, "left");
-			else
-				Hud_DrawLargeValue(pos, getstatf(STAT_ARMOR), 25, "left");
-			pos+=[3*24,0];
-			if (sitems & IT_INVULNERABILITY)
-				Hud_PicOrModel(pos, "gfx/disc", "progs/invulner.mdl", 0, 70);
-			else if (sitems & IT_ARMOR3)
-				Hud_PicOrModel(pos, "gfx/sb_armor3", "progs/armor.mdl", 2, 70);
-			else if (sitems & IT_ARMOR2)
-				Hud_PicOrModel(pos, "gfx/sb_armor2", "progs/armor.mdl", 1, 70);
-			else if (sitems & IT_ARMOR1)
-				Hud_PicOrModel(pos, "gfx/sb_armor1", "progs/armor.mdl", 0, 70);
-		}
-
-		pos = virtsize - [24,24];
-		if (sitems & IT_SHELLS)
-			Hud_PicOrModel(pos, "gfx/sb_shells", "maps/b_shell1.bsp", 0, 80);
-		else if (sitems & IT_NAILS)
-			Hud_PicOrModel(pos, "gfx/sb_nails", "maps/b_nail1.bsp", 0, 80);
-		else if (sitems & IT_ROCKETS)
-			Hud_PicOrModel(pos, "gfx/sb_rocket", "maps/b_rock1.bsp", 0, 80);
-		else if (sitems & IT_CELLS)
-			Hud_PicOrModel(pos, "gfx/sb_cells", "maps/b_batt1.bsp", 0, 80);
-		Hud_DrawLargeValue(pos-([24*3]), getstatf(STAT_AMMO), 10, "left");
-		return;
-	}
-	
-	if (autocvar(cl_sbar, 4))
+	if (autocvar(cl_sbar, 3))
 		drawpic(pos, "gfx/sbar", '320 24 0', '1 1 1', autocvar(scr_sbaralpha, 0.75), 0);
 
 	if (sitems & IT_INVULNERABILITY)
@@ -615,7 +544,7 @@ static void Hud_DrawSBar2021(vector virtsize)
 
 static void Hud_DrawIBar(vector pos, vector br)
 {
-	if (!autocvar(cl_sbar, 4) || autocvar(cl_sbar, 4) == 2 || autocvar(cl_sbar, 4) == 3)
+	if (!autocvar(cl_sbar, 3))
 	{
 		//qw puts its ammo+weapons on the side. mimic that.
 		vector pos2, pos3;
@@ -630,14 +559,7 @@ static void Hud_DrawIBar(vector pos, vector br)
 			pos2_x += br_x-42;
 			pos3 = pos2 + [42-24,-44];
 		}
-		if (autocvar(cl_sbar, 4) == 2 || autocvar(cl_sbar, 4) == 3)
-		{
-			pos3_y = 0;	//n64-style hud puts them at the top, apparently.
-			pos_x = br_x-320;	//align any keys+powerups as though the hud was aligned to the right.
-			if (pos2_y < hheight)
-				pos2_y = hheight;
-		}
-		else pos3_y -= WEAPONICONS*16;
+		pos3_y -= WEAPONICONS*16;
 		Hud_DrawAmmoCount(0, pos2 + '0 -44', TRUE);
 		Hud_DrawAmmoCount(1, pos2 + '0 -33', TRUE);
 		Hud_DrawAmmoCount(2, pos2 + '0 -22', TRUE);
@@ -651,7 +573,7 @@ static void Hud_DrawIBar(vector pos, vector br)
 		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos3+([0,16*6]), 24, LIGHTNING_WIDTH);
 	}
 	else
-	{	//standard nq sbar
+	{
 		drawpic(pos, "gfx/ibar", '320 24 0', '1 1 1', autocvar(scr_sbaralpha, 0.75), 0);
 
 		if (sitems & IT_SHOTGUN)			Hud_DrawWeapon(0, pos+[24*0,8]);
@@ -708,8 +630,8 @@ static void Hud_DrawIBar(vector pos, vector br)
 			drawstring(pos+[2,0], strpad(-3, frags), [8,8], [1,1,1],1,0);
 			if (player_localentnum == stof(getplayerkeyvalue(i, "viewentity")))
 			{
-				drawcharacter(pos+[-4,0], 0xe010, [8,8], [1,1,1],1, 0);
-				drawcharacter(pos+[24,0], 0xe011, [8,8], [1,1,1],1, 0);
+				drawcharacter(pos+[-4,0], 0xe010, [8,8], [1,1,1], 1, 0);
+				drawcharacter(pos+[24,0], 0xe011, [8,8], [1,1,1], 1, 0);
 			}
 			pos_x += 8*4;
 		}
@@ -730,43 +652,43 @@ static void Hud_DrawIBar2021(vector virtsize)
 	pos = [virtsize_x-(picsize*2), 0+(picsize*1.5)];
 	if (sitems & IT_SHOTGUN)
 	{
-		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 0);
 		Hud_DrawWeapon(0, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_SUPER_SHOTGUN)
 	{
-		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 1);
 		Hud_DrawWeapon(1, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_NAILGUN)
 	{
-		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 2);
 		Hud_DrawWeapon(2, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_SUPER_NAILGUN)
 	{
-		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 3);
 		Hud_DrawWeapon(3, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_GRENADE_LAUNCHER)
 	{
-		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 4);
 		Hud_DrawWeapon(4, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_ROCKET_LAUNCHER)
 	{
-		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 5);
 		Hud_DrawWeapon(5, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_LIGHTNING)
 	{
-		Hud_DrawAmmoCount(3, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE);
+		Hud_DrawAmmoCount(3, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 6);
 		Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos+[0,(activebuttons*16)+buffersize], 24, LIGHTNING_WIDTH);
 		activebuttons++;
 	}
@@ -848,15 +770,15 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 			Hud_CoopScores_SBar(pos - '0 24 0');
 		else
 		{
-			// if cl_sbar=0-3
-			if (autocvar(cl_sbar, 4) <= 3)
+			// if cl_sbar=0-1
+			if (autocvar(cl_sbar, 3) <= 1)
 				Hud_DrawSBar(pos - '0 24 0', virtsize);
 			else
 				Hud_DrawSBar2021(virtsize);
 		}
 
 		if (autocvar(viewsize, 100) < 110)
-			if (autocvar(cl_sbar, 4) <= 3)
+			if (autocvar(cl_sbar, 3) <= 1)
 				Hud_DrawIBar(pos - '0 48 0', virtsize);
 			else
 				Hud_DrawIBar2021(virtsize);
