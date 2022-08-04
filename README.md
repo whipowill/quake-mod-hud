@@ -2,7 +2,7 @@
 
 A Quake client-side mod for adding custom HUD layouts to the game.
 
-![QSS-M with HUD mod](https://i.imgur.com/G1Qgweb.jpg)
+![QSS-M with HUD mod](https://i.imgur.com/8vQaxJ7.jpg)
 
 This mod only works on QuakeSpasm engines.  Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
 
