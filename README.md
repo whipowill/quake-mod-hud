@@ -4,11 +4,11 @@ A Quake client-side mod for adding custom HUD layouts to the game.
 
 ![QSS-M with HUD mod](https://i.imgur.com/8vQaxJ7.jpg)
 
-This mod only works on QuakeSpasm engines.  Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
+Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
 
 ## Install
 
-- Simply copy the ``csprogs.dat`` file into your ``id1`` or other mod folder.
+Simply copy the ``csprogs.dat`` file into your ``id1`` or other mod folder.
 
 ## Usage
 
@@ -22,7 +22,7 @@ Use the following console commands:
 
 ## Issues
 
-- My understanding is this mod will only work on QS engines, but could be made to work on FTE engines by swapping out ``qsextensions.qc`` w/ ``fteextensions.qc``.
+My understanding is this mod will work on both QS and FTE engines, but if there is an issue the solution would involve swapping out ``qsextensions.qc`` w/ ``fteextensions.qc`` and recompiling the code.
 
 ## Credits
 
