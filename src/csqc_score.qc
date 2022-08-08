@@ -8,7 +8,6 @@ typedef struct
 teamscores_t cl_teamscores[14];
 teamscores_t cl_teamscores_ranked[4];
 
-// this is unused by I left it here -whipowill
 static string teamcolor[14] =
 {
 	"0.48 0.48 0.48",	// 0 Newspaper
@@ -25,6 +24,44 @@ static string teamcolor[14] =
 	"0.18 0.26 0.22",	// 11 Aqua
 	"0.49 0.39 0.03",	// 12 Lemon
 	"0.18 0.18 0.49"	// 13 Blue
+};
+/*
+static string teamname[14] =
+{
+	"White",
+	"Brown",
+	"Sky Blue",
+	"Green",
+	"Red",
+	"Mustard",
+	"Orange",
+	"Salmon",
+	"Purple",
+	"Pink",
+	"Vanilla",
+	"Aqua",
+	"Yellow",
+	"Blue"
+};
+*/
+
+// happy little color names
+static string teamname[14] =
+{
+	"Titanium White",
+	"Van Dyke Brown",
+	"Mountain Mixture",
+	"Sap Green",
+	"Alizarin Crimson",
+	"Yellow Ochre",
+	"Cadmium Orange",
+	"Flower Pink",
+	"Magenta Mauve",
+	"Dusty Rose",
+	"Dark Sienna",
+	"Phthalo Green",
+	"Indian Yellow",
+	"Prussian Blue",
 };
 
 vector(string picname, float height) Hud_AspectSize =
@@ -73,13 +110,13 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			{
 				players++;
 
-				local string teamname = cl_teamscores_ranked[t].teamname;
-				teamname = strcat(teamname, " Team");
+				local string name = cl_teamscores_ranked[t].teamname;
+				//name = strcat(teamname, " Team");
 
 				drawfill(pos+[0,0]+[0,10*players], ([40,8]), stov(cl_teamscores_ranked[t].bottomcolor), .75, 0);
 				//drawfill(pos1+([0,0]), ([28,9]), stov(cl_teamscores_ranked[i].bottomcolor), 0.75, 0);
 				drawstring(pos+[8,0]+[0,10*players], strpad(-3, ftos(cl_teamscores_ranked[t].frags)), [8,8], [1,1,1], 1, 0);
-				drawstring(pos+[64,0]+[0,10*players], strconv(0,2,2, teamname), [8,8], [1,1,1], 1, 0);
+				drawstring(pos+[64,0]+[0,10*players], strconv(0,2,2, name), [8,8], [1,1,1], 1, 0);
 			}
 		}
 		players++;
@@ -249,20 +286,20 @@ void() Hud_UpdateTeamScores =
 			// determine teamname
 			for (float u = 0 ; u < 14 ; u++)
 			{
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[0])) cl_teamscores[t].teamname = "White";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[1])) cl_teamscores[t].teamname = "Brown";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[2])) cl_teamscores[t].teamname = "Sky Blue";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[3])) cl_teamscores[t].teamname = "Green";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[4])) cl_teamscores[t].teamname = "Red";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[5])) cl_teamscores[t].teamname = "Mustard";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[6])) cl_teamscores[t].teamname = "Orange";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[7])) cl_teamscores[t].teamname = "Salmon";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[8])) cl_teamscores[t].teamname = "Purple";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[9])) cl_teamscores[t].teamname = "Pink";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[10])) cl_teamscores[t].teamname = "Vanilla";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[11])) cl_teamscores[t].teamname = "Aqua";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[12])) cl_teamscores[t].teamname = "Yellow";
-				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[13])) cl_teamscores[t].teamname = "Blue";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[0])) cl_teamscores[t].teamname = teamname[0];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[1])) cl_teamscores[t].teamname = teamname[1];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[2])) cl_teamscores[t].teamname = teamname[2];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[3])) cl_teamscores[t].teamname = teamname[3];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[4])) cl_teamscores[t].teamname = teamname[4];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[5])) cl_teamscores[t].teamname = teamname[5];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[6])) cl_teamscores[t].teamname = teamname[6];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[7])) cl_teamscores[t].teamname = teamname[7];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[8])) cl_teamscores[t].teamname = teamname[8];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[9])) cl_teamscores[t].teamname = teamname[9];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[10])) cl_teamscores[t].teamname = teamname[10];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[11])) cl_teamscores[t].teamname = teamname[11];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[12])) cl_teamscores[t].teamname = teamname[12];
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[13])) cl_teamscores[t].teamname = teamname[13];
 			}
 
 			if (cl_teamscores[t].frags >= cl_teamscores_ranked[0].frags)
