@@ -1,3 +1,31 @@
+typedef struct
+{
+	float is_team;
+	string bottomcolor;
+	float frags;
+	string teamname;
+} teamscores_t;
+teamscores_t cl_teamscores[14];
+teamscores_t cl_teamscores_ranked[4];
+
+// this is unused by I left it here -whipowill
+static string teamcolor[14] =
+{
+	"0.48 0.48 0.48",	// 0 Newspaper
+	"0.33 0.23 0.11",  	// 1 Brown
+	"0.31 0.31 0.45",	// 2 Light Blue
+	"0.22 0.22 0.03",	// 3 Green
+	"0.27 0.00 0.00",	// 4 Red
+	"0.37 0.28 0.04",	// 5 Mustard
+	"0.56 0.26 0.20",	// 6 Clay
+	"0.50 0.33 0.23",	// 7 Flesh
+	"0.34 0.21 0.26",	// 8 Lavendar
+	"0.37 0.20 0.23",	// 9 Grape
+	"0.42 0.34 0.28",	// 10 Biege
+	"0.18 0.26 0.22",	// 11 Aqua
+	"0.49 0.39 0.03",	// 12 Lemon
+	"0.18 0.18 0.49"	// 13 Blue
+};
 
 vector(string picname, float height) Hud_AspectSize =
 {
@@ -26,19 +54,45 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		pos_y += 10;
 	}
 
-	if (autocvar(cg_woot, 0))	//I added this mostly just to demonstrate that you're actually using the csqc version...
+	if (autocvar(cg_woot, 0)) // mostly just to demonstrate that you're actually using the csqc version...
 		pos_x = (virtsize_x-320)/2 * (1+sin(time));
 	else
 		pos_x += (virtsize_x-320)/2;
 
 	pos_x += 80;
 
-	//negative numbers are players sorted by frags.
-	for (float i = -1; ; i--, pos_y += 10)
+	// for counting players
+	local float players;
+
+	// for printing team scores
+	if (autocvar(cl_teams, 0))
+	{
+		for (float t = 0 ; t < 4 ; t++)
+		{
+			if (cl_teamscores_ranked[t].is_team > 0)
+			{
+				players++;
+
+				local string teamname = cl_teamscores_ranked[t].teamname;
+				teamname = strcat(teamname, " Team");
+
+				drawfill(pos+[0,0]+[0,10*players], ([40,8]), stov(cl_teamscores_ranked[t].bottomcolor), .75, 0);
+				//drawfill(pos1+([0,0]), ([28,9]), stov(cl_teamscores_ranked[i].bottomcolor), 0.75, 0);
+				drawstring(pos+[8,0]+[0,10*players], strpad(-3, ftos(cl_teamscores_ranked[t].frags)), [8,8], [1,1,1], 1, 0);
+				drawstring(pos+[64,0]+[0,10*players], strconv(0,2,2, teamname), [8,8], [1,1,1], 1, 0);
+			}
+		}
+		players++;
+	}
+
+	// negative numbers are players sorted by frags
+	for (float i = -1; ; i--)
 	{
 		string name = getplayerkeyvalue(i, "name");
-		if not (name)
-			break;
+		if not (name) break;
+
+		players++;
+
 		float isspec = stof(getplayerkeyvalue(i, "*spectator"));
 		float frags = stof(getplayerkeyvalue(i, "frags"));
 		string ping = getplayerkeyvalue(i, "ping");
@@ -59,22 +113,22 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			also any other networked userinfo
 		*/
 
-		drawstring(pos-[8*5	,0], strpad(-4, ping), [8,8], [1,1,1],1,0);
+		drawstring(pos-[8*5,0]+[0,10*players], strpad(-4, ping), [8,8], [1,1,1], 1, 0);
 		if (isspec)
-			drawstring(pos+[4,0], "spec", [8,8], [1,1,1],1,0);
+			drawstring(pos+[4,0]+[0,10*players], "spec", [8,8], [1,1,1], 1, 0);
 		else
 		{
-			drawfill(pos+[0,0], [40,4], top, 0.75, 0);
-			drawfill(pos+[0,4], [40,4], bot, 0.75, 0);
-			drawstring(pos+[8,0], strpad(-3, ftos(frags)), [8,8], [1,1,1],1,0);
+			drawfill(pos+[0,0]+[0,10*players], [40,4], top, 0.75, 0);
+			drawfill(pos+[0,4]+[0,10*players], [40,4], bot, 0.75, 0);
+			drawstring(pos+[8,0]+[0,10*players], strpad(-3, ftos(frags)), [8,8], [1,1,1], 1, 0);
 			if (player_localentnum == stof(getplayerkeyvalue(i, "viewentity")))
 			{
-				drawcharacter(pos-[8,0], 0xe00d, [8,8], [1,1,1],1, 0);
-				drawcharacter(pos+[ 0,0], 0xe010, [8,8], [1,1,1],1, 0);
-				drawcharacter(pos+[32,0], 0xe011, [8,8], [1,1,1],1, 0);
+				drawcharacter(pos-[8,0]+[0,10*players], 0xe00d, [8,8], [1,1,1], 1, 0);
+				drawcharacter(pos+[ 0,0]+[0,10*players], 0xe010, [8,8], [1,1,1], 1, 0);
+				drawcharacter(pos+[32,0]+[0,10*players], 0xe011, [8,8], [1,1,1], 1, 0);
 			}
 		}
-		drawstring(pos+[64,0], name, [8,8], [1,1,1],1,0);
+		drawstring(pos+[64,0]+[0,10*players], name, [8,8], [1,1,1], 1, 0);
 	}
 };
 
@@ -112,6 +166,23 @@ void(vector virtmin, vector virtsize) Hud_Intermission =
 	Hud_DrawIntermissionNumber(pos+[144, 144], sprintf("%3.0f/%.0f", getstatf(STAT_KILLEDMONSTERS), getstatf(STAT_TOTALMONSTERS)));
 };
 
+float(string pants1, string pants2) ComparePants =
+{
+	local vector v1, v2;
+
+	v1 = stov(pants1);
+	v2 = stov(pants2);
+
+	local float dist, is_match;
+	dist = vlen(v1 - v2);
+
+	is_match = 0;
+
+	if (dist < .03) is_match = 1;
+
+	return is_match;
+};
+
 void() Hud_UpdateTeamScores =
 {
 	float fraglimit = cvar("fraglimit");
@@ -122,6 +193,7 @@ void() Hud_UpdateTeamScores =
 		cl_teamscores[t].is_team = 0;
 		cl_teamscores[t].bottomcolor = "";
 		cl_teamscores[t].frags = 0;
+		cl_teamscores[t].teamname = "";
 	}
 
 	// foreach player (negative numbers are players sorted by frags)
@@ -160,12 +232,67 @@ void() Hud_UpdateTeamScores =
 		// next player
 		i--;
 	}
+
+	// reset all ranked team scores to zero
+	for (float t = 0 ; t < 4 ; t++)
+	{
+		cl_teamscores_ranked[t].is_team = 0;
+		cl_teamscores_ranked[t].bottomcolor = "";
+		cl_teamscores_ranked[t].frags = 0;
+		cl_teamscores_ranked[t].teamname = "";
+	}
+	for (float t = 0 ; t < 14 ; t++)
+	{
+		// order ranks
+		if (cl_teamscores[t].is_team > 0)
+		{
+			// determine teamname
+			for (float u = 0 ; u < 14 ; u++)
+			{
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[0])) cl_teamscores[t].teamname = "White";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[1])) cl_teamscores[t].teamname = "Brown";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[2])) cl_teamscores[t].teamname = "Sky Blue";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[3])) cl_teamscores[t].teamname = "Green";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[4])) cl_teamscores[t].teamname = "Red";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[5])) cl_teamscores[t].teamname = "Mustard";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[6])) cl_teamscores[t].teamname = "Orange";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[7])) cl_teamscores[t].teamname = "Salmon";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[8])) cl_teamscores[t].teamname = "Purple";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[9])) cl_teamscores[t].teamname = "Pink";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[10])) cl_teamscores[t].teamname = "Vanilla";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[11])) cl_teamscores[t].teamname = "Aqua";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[12])) cl_teamscores[t].teamname = "Yellow";
+				if (ComparePants(cl_teamscores[t].bottomcolor, teamcolor[13])) cl_teamscores[t].teamname = "Blue";
+			}
+
+			if (cl_teamscores[t].frags >= cl_teamscores_ranked[0].frags)
+			{
+				cl_teamscores_ranked[3] = cl_teamscores_ranked[2];
+				cl_teamscores_ranked[2] = cl_teamscores_ranked[1];
+				cl_teamscores_ranked[1] = cl_teamscores_ranked[0];
+				cl_teamscores_ranked[0] = cl_teamscores[t];
+			}
+			else if (cl_teamscores[t].frags >= cl_teamscores_ranked[1].frags)
+			{
+				cl_teamscores_ranked[3] = cl_teamscores_ranked[2];
+				cl_teamscores_ranked[2] = cl_teamscores_ranked[1];
+				cl_teamscores_ranked[1] = cl_teamscores[t];
+			}
+			else if (cl_teamscores[t].frags >= cl_teamscores_ranked[2].frags)
+			{
+				cl_teamscores_ranked[3] = cl_teamscores_ranked[2];
+				cl_teamscores_ranked[2] = cl_teamscores[t];
+			}
+			else if (cl_teamscores[t].frags >= cl_teamscores_ranked[3].frags)
+			{
+				cl_teamscores_ranked[3] = cl_teamscores[t];
+			}
+		}
+	}
 }
 
 void(vector virtsize) Hud_DrawTeamScores =
 {
-	Hud_UpdateTeamScores();
-
 	local vector pos1, pos2;
 	local float i, n = 0;
 
@@ -177,23 +304,21 @@ void(vector virtsize) Hud_DrawTeamScores =
 	pos2_y = 0;
 	pos2_x = pos_x;
 
-	//todo add more teams here...
-
-	for (i = 0 ; i < 14 ; i++)
+	for (i = 0 ; i < 4 ; i++)
 	{
-		if (cl_teamscores[i].is_team > 0)
+		if (cl_teamscores_ranked[i].is_team > 0)
 		{
 			n += 1;
 
 			if (n == 1)
 			{
-				drawfill(pos1+([0,0]), ([28,9]), stov(cl_teamscores[i].bottomcolor), 0.75, 0);
-				drawstring(pos1+([2,0]), strpad(-3, ftos(cl_teamscores[i].frags)), ([8,8]), ([1,1,1]),1,0);
+				drawfill(pos1+([0,0]), ([28,9]), stov(cl_teamscores_ranked[i].bottomcolor), 0.75, 0);
+				drawstring(pos1+([2,0]), strpad(-3, ftos(cl_teamscores_ranked[i].frags)), ([8,8]), ([1,1,1]),1,0);
 			}
 			else
 			{
-				drawfill(pos2+([0,0]), ([28,9]), stov(cl_teamscores[i].bottomcolor), 0.75, 0);
-				drawstring(pos2+([2,0]), strpad(-3, ftos(cl_teamscores[i].frags)), ([8,8]), ([1,1,1]),1,0);
+				drawfill(pos2+([0,0]), ([28,9]), stov(cl_teamscores_ranked[i].bottomcolor), 0.75, 0);
+				drawstring(pos2+([2,0]), strpad(-3, ftos(cl_teamscores_ranked[i].frags)), ([8,8]), ([1,1,1]),1,0);
 				break;
 			}
 		}
@@ -207,11 +332,19 @@ void(vector virtsize, float showscores) CSQC_DrawScores =
 	{
 		if (deathmatch)
 		{
+			Hud_UpdateTeamScores();
 			Hud_DeathmatchScoreboard('0 0 0', virtsize);
-			if (autocvar(cl_teams, 0))
-				Hud_DrawTeamScores(virtsize);
 		}
 	}
+
+	/*
+	else
+	{
+		if (deathmatch)
+			if (autocvar(cl_teams, 0))
+				Hud_DrawTeamScores(virtsize);
+	}
+	*/
 
 	if (intermission)
 		if (!deathmatch)

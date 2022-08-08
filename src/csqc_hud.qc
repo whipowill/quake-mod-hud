@@ -67,34 +67,7 @@ float 	PQC_PING_TIMES	=	7;
 float matchtime_minutes;
 float matchtime_seconds;
 
-typedef struct 
-{
-	float is_team;
-	string 	bottomcolor;
-	float	frags;
-}teamscores_t;
-
-teamscores_t cl_teamscores[14];
-
-static string teamcolor[14] =	
-{
-	"0.48 0.48 0.48",	// 0 Newspaper
-	"0.33 0.23 0.11",  	// 1 Brown
-	"0.31 0.31 0.45",	// 2 Light Blue
-	"0.22 0.22 0.03",	// 3 Green
-	"0.27 0.00 0.00",	// 4 Red
-	"0.37 0.28 0.04",	// 5 Mustard
-	"0.56 0.26 0.20",	// 6 Clay
-	"0.50 0.33 0.23",	// 7 Flesh
-	"0.34 0.21 0.26",	// 8 Lavendar
-	"0.37 0.20 0.23",	// 9 Grape
-	"0.42 0.34 0.28",	// 10 Biege
-	"0.18 0.26 0.22",	// 11 Aqua					
-	"0.49 0.39 0.03",	// 12 Lemon
-	"0.18 0.18 0.49"	// 13 Blue
-};
-
-//wad image names in array form, for easier access.
+// wad image names in array form, for easier access.
 static string number[10] = {
 	"gfx/num_0",
 	"gfx/num_1",
@@ -136,20 +109,16 @@ static string facetab[] = {
 	"gfx/face_inv2", "gfx/face_quad", "gfx/face_invis", "gfx/face_invul2"
 };
 
-
-
-//copies of stats, for easier access
+// copies of stats, for easier access
 static float sitems;		//copy of .items
 static float sitems2;		//copy of .items2 (or serverflags)
 static float sweapon;		//copy of .weapon
 static float shealth;		//copy of .health
 
-//Note: these are not tracked for splitscreen, which limits them to one player. We're lazy and just don't update them.
-static float flashtime[WEAPONICONS];	//tracks the time that various items were obtained, so we can flash stuff accordingly.
-static float painfinishtime;//tracks when we took damage, for flinching.
+static float flashtime[WEAPONICONS]; //tracks the time that various items were obtained, so we can flash stuff accordingly.
+static float painfinishtime; //tracks when we took damage, for flinching.
 
-
-//registers the various pics so they're ready as needed.
+// registers the various pics so they're ready as needed.
 static void() Hud_Init
 {
 	float i;
