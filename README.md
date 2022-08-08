@@ -2,7 +2,8 @@
 
 A Quake client-side mod for adding custom HUD layouts to the game.
 
-![QSS-M with HUD mod](https://i.imgur.com/8vQaxJ7.jpg)
+![2021 HUD style](https://i.imgur.com/8vQaxJ7.jpg)
+![Team Scores](https://i.imgur.com/kwuA8il.jpg)
 
 Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
 
