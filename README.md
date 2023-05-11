@@ -31,4 +31,4 @@ My understanding is this mod will work on both QS and FTE engines, but if there 
 ## External Links
 
 - [CSQC For Idiots](https://quakewiki.org/wiki/CSQC_guide_for_idiots) - Introduction to client side QC scripting
-- [CSQC Extension](https://quakewiki.org/wiki/EXT_CSQC#CSQC_ConsoleCommand) - Maybe a clue on how to autodetect teamplay games?? Still can't figure out how to do this.
+- [CSQC Extension](https://quakewiki.org/wiki/EXT_CSQC#CSQC_ConsoleCommand) - Maybe a clue on how to autodetect teamplay games?
