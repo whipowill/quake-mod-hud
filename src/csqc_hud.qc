@@ -9,17 +9,6 @@
 //
 //	I have made attempts to avoid copying the engine code, however I will not be held liable if there's any GPL contagion.
 //	There is otherwise no license for the code in this file.
-
-/*autocvars:
-	cl_sbar: alternative layouts (sorry for this complication, but mneh).
-		0: QuakeWorld style hud
-		1: Vanilla style hud
-		2: N64 / 2021 Rerelease style hud
-	cl_hudswap: QW/n64 ammo+weapons are on the
-		0: right
-		1: left
-	scr_sbaralpha: opacity of backgroundy elements
-*/
  
 // items. FIXME: you should share these with your ssqc...
 float	IT_SHOTGUN				= 1<<0;
@@ -54,18 +43,6 @@ float 	IT2_RUNE1				= 1<<5;
 float 	IT2_RUNE2				= 1<<6;
 float 	IT2_RUNE3				= 1<<7;
 float 	IT2_RUNE4				= 1<<8;
-
-//ProQuake commands
-float	PQC_NOP		    =	1;
-float 	PQC_NEW_TEAM	=	2;
-float	PQC_ERASE_TEAM	=	3;
-float 	PQC_TEAM_FRAGS	=	4;
-float	PQC_MATCH_TIME	=	5;
-float 	PQC_MATCH_RESET	=	6;
-float 	PQC_PING_TIMES	=	7;
-
-float matchtime_minutes;
-float matchtime_seconds;
 
 // wad image names in array form, for easier access.
 static string number[10] = {
@@ -206,40 +183,37 @@ static void(vector pos, float value, float threshhold, string justify) Hud_DrawL
 	}
 };
 
-static void(float type, vector pos, float drawback, float weapnum = -1) Hud_DrawAmmoCount =
+static void(float type, vector pos) Hud_DrawAmmoCount =
 {
-	// detect if this is weapon being used
-	float is_active = 0;
-	if (sweapon == (1<<weapnum)) is_active = 1;
-
 	string s;
 	float value;
 	float len;
 	float c;
+	string pic;
+
 	value = getstatf(STAT_SHELLS+type);
 	if (value < 0)
-		value = 0;	//hrm
+		value = 0;
 	if (value>999)
 		value = 999;
-		
-	if (drawback)
-	{
-		drawsubpic(pos, '42 11', "gfx/ibar", [(3.0/320)+type*(48.0/320), 0], [42.0/320, 11.0/24], '1 1 1', autocvar(scr_sbaralpha, 0.75), 0);
-		pos_x += 8;
-	}
+
+	if (type == 0) pic = "gfx/sb_shells";
+	else if (type == 1) pic = "gfx/sb_nails";
+	else if (type == 2) pic = "gfx/sb_rocket";
+	else if (type == 3) pic = "gfx/sb_cells";
+
+	drawpic(pos, pic, '16 16 0', '1 1 1', 1, 0);
 
 	s = ftos(floor(value));
 	len = strlen(s);
 
-	pos_x += 8 * (3-len);
+	pos += [-6,4];
+	pos_x -= 8*len; // right justify the numbers
 	while(len>0)
 	{
 		len--;
 		c = str2chr(s, len);
-		if (is_active)
-			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], 1, 0);
-		else
-			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .6, 0);
+		drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .7, 0);
 	}
 };
 
@@ -358,44 +332,12 @@ static void Hud_DrawFace(vector pos)
 		Hud_PicOrModel(pos, face, "maps/b_bh10.bsp", 0, -90);
 };
 
-static void Hud_DrawSBar(vector pos, vector virtsize)
-{
-	if (autocvar(cl_sbar, 3))
-		drawpic(pos, "gfx/sbar", '320 24 0', '1 1 1', autocvar(scr_sbaralpha, 0.75), 0);
-
-	if (sitems & IT_INVULNERABILITY)
-	{
-		drawpic(pos, "gfx/disc", '24 24 0', '1 1 1', 1, 0);
-		Hud_DrawLargeValue(pos+'24 0 0', 999, 25, "left");
-	}
-	else
-	{
-		Hud_DrawLargeValue(pos+'24 0 0', getstatf(STAT_ARMOR), 25, "left");
-		if (sitems & IT_ARMOR3)
-			drawpic(pos, "gfx/sb_armor3", '24 24 0', '1 1 1', 1, 0);
-		else if (sitems & IT_ARMOR2)
-			drawpic(pos, "gfx/sb_armor2", '24 24 0', '1 1 1', 1, 0);
-		else if (sitems & IT_ARMOR1)
-			drawpic(pos, "gfx/sb_armor1", '24 24 0', '1 1 1', 1, 0);
-	}
-
-	Hud_DrawFace(pos+'112 0 0');
-	Hud_DrawLargeValue(pos+'136 0 0', shealth, 25, "left");
-
-	if (sitems & IT_SHELLS)
-		drawpic(pos+'224 0 0', "gfx/sb_shells", '24 24 0', '1 1 1', 1, 0);
-	else if (sitems & IT_NAILS)
-		drawpic(pos+'224 0 0', "gfx/sb_nails", '24 24 0', '1 1 1', 1, 0);
-	else if (sitems & IT_ROCKETS)
-		drawpic(pos+'224 0 0', "gfx/sb_rocket", '24 24 0', '1 1 1', 1, 0);
-	else if (sitems & IT_CELLS)
-		drawpic(pos+'224 0 0', "gfx/sb_cells", '24 24 0', '1 1 1', 1, 0);
-	Hud_DrawLargeValue(pos+'248 0 0', getstatf(STAT_AMMO), 10, "left");
-};
-
-static void Hud_DrawSBar2021(vector virtsize)
+static void Hud_DrawSBar(vector virtsize)
 {
 	// edited from the above function to mimic the 2021 rerelease. -whipowill
+
+	float test = autocvar(cl_hudtest, 0);
+	float test2 = autocvar(cl_hudtest2, 0);
 
 	// for math
 	float picsize = 24;
@@ -448,256 +390,127 @@ static void Hud_DrawSBar2021(vector virtsize)
 	// display rune keys
 	activebuttons = 0;
 	pos = [virtsize_x-(picsize*2)+picsize, virtsize_y-(picsize*1.5)-(buffersize*2)-iconsize];
-
-	if (sitems2 & IT2_RUNE4)
+	if ((sitems2 & IT2_RUNE4) || test2)
 	{
 		activebuttons++;
 		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil4", '8 16 0', '1 1 1', 1, 0);
 	}
-	if (sitems2 & IT2_RUNE3)
+	if ((sitems2 & IT2_RUNE3) || test2)
 	{
 		activebuttons++;
 		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil3", '8 16 0', '1 1 1', 1, 0);
 	}
-	if (sitems2 & IT2_RUNE2)
+	if ((sitems2 & IT2_RUNE2) || test2)
 	{
 		activebuttons++;
 		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil2", '8 16 0', '1 1 1', 1, 0);
 	}
-	if (sitems2 & IT2_RUNE1)
+	if ((sitems2 & IT2_RUNE1) || test2)
 	{
 		activebuttons++;
 		drawpic(pos-[8*activebuttons,0], "gfx/sb_sigil1", '8 16 0', '1 1 1', 1, 0);
 	}
 
-	// display icons
-	activebuttons = 0;
-	pos = [virtsize_x-(picsize*2)+picsize-iconsize, virtsize_y-(picsize*1.5)-(buffersize*2)];
-	if (sitems2 & (IT2_RUNE1 || IT2_RUNE2 || IT2_RUNE3 || IT2_RUNE4))
-	{
-		activebuttons++;
-		pos -= [0,buffersize];
-	}
+	local float hasrunes = (activebuttons > 0) ? 1 : 0;
 
-	if ((sitems & IT_KEY1))
+	// display powerups
+	activebuttons = hasrunes ? 1 : 0;
+	pos = [virtsize_x-(picsize*2)+picsize-iconsize, virtsize_y-(picsize*1.5)-(buffersize*4)];
+	if ((sitems & IT_KEY1) || test)
 	{
 		activebuttons++;
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_key1", '16 16 0', '1 1 1', 1, 0);
 	}
-	if ((sitems & IT_KEY2))
+	if ((sitems & IT_KEY2) || test)
 	{
 		activebuttons++;
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_key2", '16 16 0', '1 1 1', 1, 0);
 	}
-	if ((sitems & IT_INVISIBILITY))
+	if ((sitems & IT_INVISIBILITY) || test)
 	{
 		activebuttons++;
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_invis", '16 16 0', '1 1 1', 1, 0);
 	}
-	if ((sitems & IT_INVULNERABILITY))
+	if ((sitems & IT_INVULNERABILITY) || test)
 	{
 		activebuttons++;
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_invuln", '16 16 0', '1 1 1', 1, 0);
 	}
-	if ((sitems & IT_SUIT))
+	if ((sitems & IT_SUIT) || test)
 	{
 		activebuttons++;
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_suit", '16 16 0', '1 1 1', 1, 0);
 	}
-	if ((sitems & IT_QUAD))
+	if ((sitems & IT_QUAD) || test)
 	{
 		activebuttons++;
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_quad", '16 16 0', '1 1 1', 1, 0);
 	}
 };
 
-static void Hud_DrawIBar(vector pos, vector br)
-{
-	if (!autocvar(cl_sbar, 3))
-	{
-		//qw puts its ammo+weapons on the side. mimic that.
-		vector pos2, pos3;
-		const float hheight = (WEAPONICONS*16)+(11*4);
-		pos2 = [0, br_y-48, 0];
-		if (pos2_y < hheight)
-			pos2_y = hheight;
-		if (autocvar(cl_hudswap, 0))
-			pos3 = pos2 + [0,-44];	//hudswap puts it on the left
-		else
-		{	//otherwise align to the right edge
-			pos2_x += br_x-42;
-			pos3 = pos2 + [42-24,-44];
-		}
-		pos3_y -= WEAPONICONS*16;
-		Hud_DrawAmmoCount(0, pos2 + '0 -44', TRUE);
-		Hud_DrawAmmoCount(1, pos2 + '0 -33', TRUE);
-		Hud_DrawAmmoCount(2, pos2 + '0 -22', TRUE);
-		Hud_DrawAmmoCount(3, pos2 + '0 -11', TRUE);
-		if (sitems & IT_SHOTGUN)			Hud_DrawWeapon(0, pos3+[0,16*0]);
-		if (sitems & IT_SUPER_SHOTGUN)		Hud_DrawWeapon(1, pos3+[0,16*1]);
-		if (sitems & IT_NAILGUN)			Hud_DrawWeapon(2, pos3+[0,16*2]);
-		if (sitems & IT_SUPER_NAILGUN)		Hud_DrawWeapon(3, pos3+[0,16*3]);
-		if (sitems & IT_GRENADE_LAUNCHER)	Hud_DrawWeapon(4, pos3+[0,16*4]);
-		if (sitems & IT_ROCKET_LAUNCHER)	Hud_DrawWeapon(5, pos3+[0,16*5]);
-		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos3+([0,16*6]), 24, LIGHTNING_WIDTH);
-	}
-	else
-	{
-		drawpic(pos, "gfx/ibar", '320 24 0', '1 1 1', autocvar(scr_sbaralpha, 0.75), 0);
-
-		if (sitems & IT_SHOTGUN)			Hud_DrawWeapon(0, pos+[24*0,8]);
-		if (sitems & IT_SUPER_SHOTGUN)		Hud_DrawWeapon(1, pos+[24*1,8]);
-		if (sitems & IT_NAILGUN)			Hud_DrawWeapon(2, pos+[24*2,8]);
-		if (sitems & IT_SUPER_NAILGUN)		Hud_DrawWeapon(3, pos+[24*3,8]);
-		 if (sitems & IT_GRENADE_LAUNCHER)	Hud_DrawWeapon(4, pos+[24*4,8]);
-		if (sitems & IT_ROCKET_LAUNCHER)	Hud_DrawWeapon(5, pos+[24*5,8]);
-		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos+([24*6,8]), LIGHTNING_WIDTH, LIGHTNING_WIDTH);
-
-		Hud_DrawAmmoCount(0, pos + '10 0 0', FALSE);
-		Hud_DrawAmmoCount(1, pos + '58 0 0', FALSE);
-		Hud_DrawAmmoCount(2, pos + '106 0 0', FALSE);
-		Hud_DrawAmmoCount(3, pos + '154 0 0', FALSE);
-	}
-
-	if (sitems & IT_KEY1)
-		drawpic(pos+'192 8 0', "gfx/sb_key1", '16 16 0', '1 1 1', 1, 0);
-	if (sitems & IT_KEY2)
-		drawpic(pos+'208 8 0', "gfx/sb_key2", '16 16 0', '1 1 1', 1, 0);
-	if (sitems & IT_INVISIBILITY)
-		drawpic(pos+'224 8 0', "gfx/sb_invis", '16 16 0', '1 1 1', 1, 0);
-	if (sitems & IT_INVULNERABILITY)
-		drawpic(pos+'240 8 0', "gfx/sb_invuln", '16 16 0', '1 1 1', 1, 0);
-	if (sitems & IT_SUIT)
-		drawpic(pos+'256 8 0', "gfx/sb_suit", '16 16 0', '1 1 1', 1, 0);
-	if (sitems & IT_QUAD)
-		drawpic(pos+'272 8 0', "gfx/sb_quad", '16 16 0', '1 1 1', 1, 0);
-
-	if (sitems2 & IT2_RUNE1)
-		drawpic(pos+'288 8 0', "gfx/sb_sigil1", '8 16 0', '1 1 1', 1, 0);
-	if (sitems2 & IT2_RUNE2)
-		drawpic(pos+'296 8 0', "gfx/sb_sigil2", '8 16 0', '1 1 1', 1, 0);
-	if (sitems2 & IT2_RUNE3)
-		drawpic(pos+'304 8 0', "gfx/sb_sigil3", '8 16 0', '1 1 1', 1, 0);
-	if (sitems2 & IT2_RUNE4)
-		drawpic(pos+'312 8 0', "gfx/sb_sigil4", '8 16 0', '1 1 1', 1, 0);
-
-	/*
-	// this was a terrible feature and should never have been in the game at all. -whipowill
-	if (deathmatch)
-	{
-		//should probably show team scores, but this mimics vanilla
-		pos_x += 194;
-		for (float i = -1; i >= -4; i--)
-		{
-			string frags = getplayerkeyvalue(i, "frags");
-			if not (frags)
-				break;
-			vector top = stov(getplayerkeyvalue(i, "topcolor_rgb"));
-			vector bot = stov(getplayerkeyvalue(i, "bottomcolor_rgb"));
-			drawfill(pos+[0,1], [28,3], top, 0.75, 0);
-			drawfill(pos+[0,4], [28,4], bot, 0.75, 0);
-			drawstring(pos+[2,0], strpad(-3, frags), [8,8], [1,1,1],1,0);
-			if (player_localentnum == stof(getplayerkeyvalue(i, "viewentity")))
-			{
-				drawcharacter(pos+[-4,0], 0xe010, [8,8], [1,1,1], 1, 0);
-				drawcharacter(pos+[24,0], 0xe011, [8,8], [1,1,1], 1, 0);
-			}
-			pos_x += 8*4;
-		}
-	}
-	*/
-};
-
-static void Hud_DrawIBar2021(vector virtsize)
+static void Hud_DrawIBar(vector virtsize)
 {
 	// for math
 	float picsize = 24;
 	float iconsize = 16;
 	float buffersize = 2;
-	float activebuttons;
+	//float activebuttons;
 	vector pos;
 
+	// draw ammo
+	pos = [virtsize_x-picsize-iconsize, 0];
+	Hud_DrawAmmoCount(0, pos+[0, (iconsize+buffersize)*1]);
+	Hud_DrawAmmoCount(1, pos+[0, (iconsize+buffersize)*2]);
+	Hud_DrawAmmoCount(2, pos+[0, (iconsize+buffersize)*3]);
+	Hud_DrawAmmoCount(3, pos+[0, (iconsize+buffersize)*4]);
+
+	/**
 	// draw weapons
-	pos = [virtsize_x-(picsize*2), 0+(picsize*1.5)];
+	pos = [virtsize_x-(picsize*2), 0+(picsize*1.5)+((iconsize+buffersize)*4)];
 	if (sitems & IT_SHOTGUN)
 	{
-		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 0);
+		//Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 0);
 		Hud_DrawWeapon(0, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_SUPER_SHOTGUN)
 	{
-		Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 1);
+		//Hud_DrawAmmoCount(0, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 1);
 		Hud_DrawWeapon(1, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_NAILGUN)
 	{
-		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 2);
+		//Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 2);
 		Hud_DrawWeapon(2, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_SUPER_NAILGUN)
 	{
-		Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 3);
+		//Hud_DrawAmmoCount(1, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 3);
 		Hud_DrawWeapon(3, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_GRENADE_LAUNCHER)
 	{
-		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 4);
+		//Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 4);
 		Hud_DrawWeapon(4, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_ROCKET_LAUNCHER)
 	{
-		Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 5);
+		//Hud_DrawAmmoCount(2, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 5);
 		Hud_DrawWeapon(5, pos+[0,(activebuttons*16)+buffersize]);
 		activebuttons++;
 	}
 	if (sitems & IT_LIGHTNING)
 	{
-		Hud_DrawAmmoCount(3, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 6);
+		//Hud_DrawAmmoCount(3, pos-[28,0]+[0,(activebuttons*16)+(buffersize*3)], FALSE, 6);
 		Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos+[0,(activebuttons*16)+buffersize], 24, LIGHTNING_WIDTH);
 		activebuttons++;
 	}
+	**/
 };
-
-static void(vector pos, string num) Hud_DrawMatchNumbers =
-{
-	float i;
-	float c;
-	local float a;
-
-	a = autocvar(hud_matchtime_alpha, 1);
-
-	for(i = 0; ; i++, pos_x += 24)
-	{
-		c = str2chr(num, i);
-		if (!c)
-			break;
-		if (c == ' ')
-			continue;
-		if (c == '/')
-			drawpic(pos, "gfx/num_slash", ([24,24]),([1,0,0]),a,0);
-		else if (c == ':' || c == '.')
-			drawpic(pos, "gfx/num_colon", ([24,24]),([1,0,0]),a,0);
-		else if (c == '-')
-			drawpic(pos, "gfx/anum_minus", ([24,24]),([1,1,1]),a,0);
-		else if (c >= '0' && c <= '9')
-			drawpic(pos, anumber[c-'0'], ([24,24]),([1,1,1]),a,0);
-	}
-};
-
-void() Hud_DrawMatchTime =
-{
-	vector pos;
-
-	pos_x = autocvar(hud_matchtime_x, 10);
-	pos_y = autocvar(hud_matchtime_y, 10);
-
-	Hud_DrawMatchNumbers(pos+([0, 0]), sprintf("%2.0f:%02.0f", matchtime_minutes, matchtime_seconds));
-}
 
 float numclientseats;
 static void Hud_Draw(vector virtsize, float scoreboard)
@@ -736,25 +549,16 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 	if (autocvar(viewsize, 100) < 120)
 	{
 		if (scoreboard)
+		{
 			Hud_CoopScores_SBar(pos - '0 24 0');
+		}
 		else
 		{
-			// if cl_sbar=0-1
-			if (autocvar(cl_sbar, 3) <= 1)
-				Hud_DrawSBar(pos - '0 24 0', virtsize);
-			else
-				Hud_DrawSBar2021(virtsize);
+			Hud_DrawSBar(virtsize);
+			if (autocvar(viewsize, 100) < 110)
+				Hud_DrawIBar(virtsize);
 		}
-
-		if (autocvar(viewsize, 100) < 110)
-			if (autocvar(cl_sbar, 3) <= 1)
-				Hud_DrawIBar(pos - '0 48 0', virtsize);
-			else
-				Hud_DrawIBar2021(virtsize);
 	}
-
-	//if (autocvar(hud_matchtimer, 1))
-		//Hud_DrawMatchTime(virtsize);//todo add virtsize here too
 };
 
 void () CSQC_Parse_Event =
@@ -765,54 +569,10 @@ void () CSQC_Parse_Event =
 
 	switch (ev)
 	{
-		/*
-		case PQC_MATCH_TIME:
-			matchtime_minutes = readbyte();
-			matchtime_seconds = readbyte();
-			break;
-
-		case PQC_NEW_TEAM:
-			team = readbyte();
-			if (team < 0 || team > 15) return;
-			cl_teamscores[team].bottomcolor = teamcolor[team];		//save out the rgb values for team number
-			cl_teamscores[team].frags = 0;
-			break;
-
-		case PQC_ERASE_TEAM:
-			team = readbyte();
-			if (team < 0 || team > 15) return;
-			cl_teamscores[team].bottomcolor = "0 0 0";
-			cl_teamscores[team].frags = 0;
-			break;
-
-		case PQC_TEAM_OVERLAY:
-			local float teammate;
-			teammate = readbyte();
-			if ((teamate <= 0)||(teammate > 8)) return;//FIXME: SV_MAXPLAYERS
-			cl_teamoverlay[teammate].health = readshort();
-			cl_teamoverlay[teammate].armor = readshort();
-			cl_teamoverlay[teammate].weapon = readshort();
-			cl_teamoverlay[teammate].ammo = readshort();
-			cl_teamoverlay[teammate].powerup = readshort();
-			break;			
-
-		case PQC_TEAM_FRAGS:
-			local float frags;
-			team = readbyte();
-			if (team < 0 || team > 15) return;
-			frags = readshort();
-			cl_teamscores[team].frags = frags;
-			break;			
-			
-		case PQC_MATCH_RESET:
-			local float i;
-			for (i = 0 ; i < 14 ; i++)
-			{				
-				cl_teamscores[i].bottomcolor = "0 0 0";
-				cl_teamscores[i].frags = 0;
-			}
-			break;
-		*/
+		//case PQC_MATCH_TIME:
+			//matchtime_minutes = readbyte();
+			//matchtime_seconds = readbyte();
+			//break;
 	}
 }
 
