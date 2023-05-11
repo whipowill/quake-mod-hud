@@ -2,8 +2,8 @@
 
 A Quake client-side mod for adding a N64/2021 HUD layout to the game.  This layout isn't exactly the same as the 2021 rerelease, but it's close.  I used a little artistic license in this mod.
 
-![2021 HUD style](https://i.imgur.com/Y6CRpck.jpg)
-![Team Scores](https://i.imgur.com/kwuA8il.jpg)
+![2021 HUD style](https://i.imgur.com/T7e9LWg.jpg)
+![Team Scores](https://i.imgur.com/Ia2e3ZM.jpg)
 
 Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
 
