@@ -216,6 +216,8 @@ static void(float type, vector pos) Hud_DrawAmmoCount =
 		if (!is_grenades) return;
 
 		value = getstatf(IT_GRENADES);
+
+		if (!value) return;
 	}
 	else
 	{
@@ -230,7 +232,7 @@ static void(float type, vector pos) Hud_DrawAmmoCount =
 	else if (type == 1) pic = "gfx/sb_nails";
 	else if (type == 2) pic = "gfx/sb_rocket";
 	else if (type == 3) pic = "gfx/sb_cells";
-	else if (type == 4) pic = "gfx/sb_sigil1"; // I added this to the game! -whipowill
+	else if (type == 4) pic = "gfx/disc"; // I added this to the game! -whipowill
 
 	drawpic(pos, pic, '16 16 0', '1 1 1', 1, 0);
 
@@ -418,14 +420,6 @@ static void Hud_DrawSBar(vector virtsize)
 	// draw ammo numbers
 	Hud_DrawLargeValue(pos-[(picsize*0.5),0], getstatf(STAT_AMMO), 10, "right", 24);
 
-	/*
-	local float is_grenades = getstatf(VAR_GRENADES);
-	if (!is_grenades) return;
-	{
-		Hud_DrawLargeValue(pos-[(picsize*0.5),iconsize+(buffersize*2)], getstatf(IT_GRENADES), 0, "right", 16);
-	}
-	*/
-
 	// display rune keys
 	activebuttons = 0;
 	pos = [virtsize_x-(picsize*2)+picsize, virtsize_y-(picsize*1.5)-(buffersize*2)-iconsize];
@@ -486,6 +480,7 @@ static void Hud_DrawSBar(vector virtsize)
 		drawpic(pos-[0,((iconsize+buffersize)*activebuttons)-buffersize], "gfx/sb_quad", '16 16 0', '1 1 1', 1, 0);
 	}
 
+	/*
 	// draw grenades
 	local float is_grenades = getstatf(VAR_GRENADES);
 	if (!is_grenades) return;
@@ -493,6 +488,7 @@ static void Hud_DrawSBar(vector virtsize)
 		pos = [virtsize_x-picsize, picsize/2];
 		Hud_DrawLargeValue(pos, getstatf(IT_GRENADES), 0, "right", 16);
 	}
+	*/
 };
 
 static void Hud_DrawIBar(vector virtsize)
@@ -507,15 +503,15 @@ static void Hud_DrawIBar(vector virtsize)
 	pos = [virtsize_x-picsize, picsize/2];
 
 	// make room for grenades space
-	pos += [0, (buffersize*2)];
+	//pos += [0, (buffersize*2)];
 
 	// draw ammo
 	pos -= [iconsize, 0];
-	Hud_DrawAmmoCount(0, pos+[0, (iconsize+buffersize)*1]);
-	Hud_DrawAmmoCount(1, pos+[0, (iconsize+buffersize)*2]);
-	Hud_DrawAmmoCount(2, pos+[0, (iconsize+buffersize)*3]);
-	Hud_DrawAmmoCount(3, pos+[0, (iconsize+buffersize)*4]);
-	//Hud_DrawAmmoCount(4, pos+[0, (iconsize+buffersize)*5]); // hand grenades
+	Hud_DrawAmmoCount(0, pos+[0, (iconsize+buffersize)*0]);
+	Hud_DrawAmmoCount(1, pos+[0, (iconsize+buffersize)*1]);
+	Hud_DrawAmmoCount(2, pos+[0, (iconsize+buffersize)*2]);
+	Hud_DrawAmmoCount(3, pos+[0, (iconsize+buffersize)*3]);
+	Hud_DrawAmmoCount(4, pos+[0, (iconsize+buffersize)*4]); // hand grenades
 
 	if (autocvar(cl_weapons, 0))
 	{
