@@ -11,14 +11,17 @@ Because this is a client-side mod, it means you can use it alongside other Quake
 
 Simply copy the ``csprogs.dat`` file into your ``id1`` or other mod folder.
 
+## Changelog
+
+- May 2023
+	- Autodetect ``teamplay`` from [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod
+	- Display hand grenades count from [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod
+
 ## Usage
 
-- ``cl_teams 1`` - change scoreboard to team mode (not auto-detected from server atm)
-
-### Testing
-
-- ``cl_hudtest 1`` - display all powerups
-- ``cl_hudtest2 1`` - display all runes
+- ``cl_teams 1`` - change scoreboard to teamplay mode (default ``0``)
+- ``cl_weapons 1`` - will show weapons you possess on the HUD (default ``0``)
+- ``cl_hudtest 1`` - display all icons on the HUD for testing purposes (default ``0``)
 
 ## Issues
 
@@ -30,5 +33,6 @@ My understanding is this mod will work on both QS and FTE engines, but if there 
 
 ## External Links
 
-- [CSQC For Idiots](https://quakewiki.org/wiki/CSQC_guide_for_idiots) - Introduction to client side QC scripting
-- [CSQC Extension](https://quakewiki.org/wiki/EXT_CSQC#CSQC_ConsoleCommand) - Maybe a clue on how to autodetect teamplay games?
+- [CSQC Extension](https://quakewiki.org/wiki/EXT_CSQC)
+- [CSQC Guide For Idiots](https://quakewiki.org/wiki/CSQC_guide_for_idiots)
+- [Client-Side QuakeC](https://www.quakewiki.net/darkplaces-wiki/client-side-quakec/)

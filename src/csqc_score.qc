@@ -102,7 +102,8 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 	local float players;
 
 	// for printing team scores
-	if (autocvar(cl_teams, 0))
+	local float is_teamplay = getstatf(VAR_TEAMPLAY);
+	if (autocvar(cl_teams, 0) || is_teamplay)
 	{
 		for (float t = 0 ; t < 4 ; t++)
 		{
