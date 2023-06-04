@@ -13,6 +13,8 @@ Simply copy the ``csprogs.dat`` file into your ``id1`` or other mod folder.
 
 ## Changelog
 
+- June 2023
+	- Add deaths count from [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod
 - May 2023
 	- Autodetect ``teamplay`` from [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod
 	- Display hand grenades count from [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod
