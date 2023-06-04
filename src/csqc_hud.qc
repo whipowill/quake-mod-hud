@@ -21,12 +21,18 @@ float	IT_LIGHTNING			= 1<<6;
 
 //float	IT_EXTRA_WEAPON			= 1<<7;
 
-// my custom vars (33-63) -whipowill
-float	VAR_TEAMPLAY = 33;
-float	VAR_GRENADES = 34;
+// =================================================
 
-// my custom stats (128-255) -whipowill
-float	IT_GRENADES = 128;
+// my client vars (33-63) -whipowill
+const float IT_GRENADES = 33;
+
+// my global vars (128-255) -whipowill
+const float GAME_SCARLET = 128;
+const float GAME_TEAMPLAY = 129;
+const float GAME_GRENADES = 130;
+const float SCORE_DEATHS = 131; // 32 slots
+
+// =================================================
 
 float	IT_SHELLS				= 1<<8;
 float	IT_NAILS				= 1<<9;
@@ -212,7 +218,7 @@ static void(float type, vector pos) Hud_DrawAmmoCount =
 
 	if (type == 4) // I added this to the game! -whipowill
 	{
-		local float is_grenades = getstatf(VAR_GRENADES);
+		local float is_grenades = getstatf(GAME_GRENADES);
 		if (!is_grenades) return;
 
 		value = getstatf(IT_GRENADES);
@@ -482,7 +488,7 @@ static void Hud_DrawSBar(vector virtsize)
 
 	/*
 	// draw grenades
-	local float is_grenades = getstatf(VAR_GRENADES);
+	local float is_grenades = getstatf(GAME_GRENADES);
 	if (!is_grenades) return;
 	{
 		pos = [virtsize_x-picsize, picsize/2];

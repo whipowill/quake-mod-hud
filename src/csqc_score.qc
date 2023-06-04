@@ -98,11 +98,15 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 
 	pos_x += 80;
 
+	local float is_scarlet = getstatf(GAME_SCARLET);
+	//if (is_scarlet)
+		//pos -= [50,0];
+
 	// for counting players
 	local float players;
 
 	// for printing team scores
-	local float is_teamplay = getstatf(VAR_TEAMPLAY);
+	local float is_teamplay = getstatf(GAME_TEAMPLAY);
 	if (autocvar(cl_teams, 0) || is_teamplay)
 	{
 		for (float t = 0 ; t < 4 ; t++)
@@ -123,8 +127,109 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		players++;
 	}
 
+	// alphabetize the list of players (so we can ID players from score stats from server)
+	if (is_scarlet)
+	{
+		string score_player_alpha[8];
+
+        // reset player order
+        score_player_alpha[7] = "ZZZZZZZ";
+        score_player_alpha[6] = "ZZZZZZZ";
+        score_player_alpha[5] = "ZZZZZZZ";
+        score_player_alpha[4] = "ZZZZZZZ";
+        score_player_alpha[3] = "ZZZZZZZ";
+        score_player_alpha[2] = "ZZZZZZZ";
+        score_player_alpha[1] = "ZZZZZZZ";
+        score_player_alpha[0] = "ZZZZZZZ";
+
+		for (float i=-1; ; i--)
+		{
+			string name = getplayerkeyvalue(i, "name");
+			if not (name) break;
+
+			if (strcasecmp(name, score_player_alpha[0]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = score_player_alpha[5];
+                    score_player_alpha[5] = score_player_alpha[4];
+                    score_player_alpha[4] = score_player_alpha[3];
+                    score_player_alpha[3] = score_player_alpha[2];
+                    score_player_alpha[2] = score_player_alpha[1];
+                    score_player_alpha[1] = score_player_alpha[0];
+                    score_player_alpha[0] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[1]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = score_player_alpha[5];
+                    score_player_alpha[5] = score_player_alpha[4];
+                    score_player_alpha[4] = score_player_alpha[3];
+                    score_player_alpha[3] = score_player_alpha[2];
+                    score_player_alpha[2] = score_player_alpha[1];
+                    score_player_alpha[1] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[2]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = score_player_alpha[5];
+                    score_player_alpha[5] = score_player_alpha[4];
+                    score_player_alpha[4] = score_player_alpha[3];
+                    score_player_alpha[3] = score_player_alpha[2];
+                    score_player_alpha[2] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[3]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = score_player_alpha[5];
+                    score_player_alpha[5] = score_player_alpha[4];
+                    score_player_alpha[4] = score_player_alpha[3];
+                    score_player_alpha[3] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[4]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = score_player_alpha[5];
+                    score_player_alpha[5] = score_player_alpha[4];
+                    score_player_alpha[4] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[5]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = score_player_alpha[5];
+                    score_player_alpha[5] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[6]) < 0)
+            {
+                    score_player_alpha[7] = score_player_alpha[6];
+                    score_player_alpha[6] = name;
+            }
+            else if (strcasecmp(name, score_player_alpha[7]) < 0)
+            {
+                    score_player_alpha[7] = name;
+            }
+		}
+
+		// print sorted players to screen for testing
+		/*
+		float rows;
+		for (float j=0; j<8; j++)
+		{
+			drawstring([0,(10*rows)+60], strcat(score_player_alpha[j], " - ", ftos(getstatf(SCORE_DEATHS+j))), [8,8], [1,1,1], 1, 0);
+			rows++;
+		}
+		*/
+
+		// draw key
+		players++;
+		players++;
+		drawstring(pos+[0,10*players], strconv(0,2,2, "Frags"), [8,8], [1,1,1], 1, 0);
+		drawstring(pos+[64,0]+[0,10*players], strconv(0,2,2, "Name"), [8,8], [1,1,1], 1, 0);
+		drawstring(pos+[148,0]+[0,10*players], strconv(0,2,2, "Deaths"), [8,8], [1,1,1], 1, 0);
+		players++;
+	}
+
 	// negative numbers are players sorted by frags
-	for (float i = -1; ; i--)
+	for (float i=-1; ; i--)
 	{
 		string name = getplayerkeyvalue(i, "name");
 		if not (name) break;
@@ -136,8 +241,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		string ping = getplayerkeyvalue(i, "ping");
 		vector top = stov(getplayerkeyvalue(i, "topcolor_rgb"));
 		vector bot = stov(getplayerkeyvalue(i, "bottomcolor_rgb"));
-		//name = strconv(0,2,2, name);
-		ping = strconv(0,2,2, ping);
+
 		//FIXME: string team = getplayerkeyvalue(i, "team");	//QW team names do NOT match player colours.
 		/*Other interesting fields
 			pl 			- for packetloss
@@ -151,7 +255,26 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			also any other networked userinfo
 		*/
 
-		drawstring(pos-[8*5,0]+[0,10*players], strpad(-4, ping), [8,8], [1,1,1], 1, 0);
+		// ------------------------------------------
+
+		float deaths;
+		if (is_scarlet)
+		{
+			for (float j=0; j<8; j++)
+			{
+				if (name == score_player_alpha[j])
+				{
+					deaths = getstatf(SCORE_DEATHS+j);
+
+					break;
+				}
+			}
+		}
+
+		// ------------------------------------------
+
+		if (ping != "0")
+			drawstring(pos-[8*6,0]+[0,10*players], strpad(-4, strconv(0,2,2, ping)), [8,8], [1,1,1], 1, 0);
 		if (isspec)
 			drawstring(pos+[4,0]+[0,10*players], "spec", [8,8], [1,1,1], 1, 0);
 		else
@@ -167,6 +290,10 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			}
 		}
 		drawstring(pos+[64,0]+[0,10*players], name, [8,8], [1,1,1], 1, 0);
+		if (is_scarlet)
+		{
+			drawstring(pos+[170,0]+[0,10*players], strpad(-3, ftos(deaths)), [8,8], [1,1,1], 1, 0);
+		}
 	}
 };
 
