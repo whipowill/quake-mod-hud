@@ -273,6 +273,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 					// this stupid process is bc CSQC doesn't have a round() function
 					kd = floor((frags / deaths * 100) + 0.5);
 					if (deaths == 0) kd = (frags > 0) ? 1000 : 0;
+					if (frags < 0) kd = 0;
 
 					break;
 				}
@@ -290,7 +291,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			drawfill([(virtsize_x/2)-140,pos_y-2]+[0,10*players], [280,12], bot, 0.25, 0);
 		}
 		if (ping != "0" || test)
-			drawstring(pos-[8*5,0]+[0,10*players], strpad(-4, strconv(0,2,2, ping)), [8,8], [1,1,1], 1, 0);
+			drawstring(pos-[8*5,0]+[6,2]+[0,10*players], strpad(-4, strconv(0,2,2, ping)), [6,6], [1,1,1], 1, 0);
 		drawfill(pos+[0,0]+[0,10*players], [40,4], top, 0.75, 0);
 		drawfill(pos+[0,4]+[0,10*players], [40,4], bot, 0.75, 0);
 		drawstring(pos+[8,0]+[0,10*players], strpad(-3, ftos(frags)), [8,8], [1,1,1], 1, 0);
