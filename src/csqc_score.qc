@@ -99,8 +99,8 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 	pos_x += 80;
 
 	local float is_scarlet = getstatf(GAME_SCARLET);
-	//if (is_scarlet)
-		//pos -= [50,0];
+	if (is_scarlet)
+		pos -= [20,0];
 
 	// for counting players
 	local float players;
@@ -222,9 +222,10 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		// draw key
 		players++;
 		players++;
-		drawstring(pos+[0,10*players], strconv(0,2,2, "Frags"), [8,8], [1,1,1], 1, 0);
-		drawstring(pos+[64,0]+[0,10*players], strconv(0,2,2, "Name"), [8,8], [1,1,1], 1, 0);
-		drawstring(pos+[148,0]+[0,10*players], strconv(0,2,2, "Deaths"), [8,8], [1,1,1], 1, 0);
+		drawstring(pos+[5,10*players], strconv(0,2,2, "Frags"), [6,6], [1,1,1], 1, 0);
+		drawstring(pos+[64,0]+[0,10*players], strconv(0,2,2, "Name"), [6,6], [1,1,1], 1, 0);
+		drawstring(pos+[158,0]+[0,10*players], strconv(0,2,2, "Deaths"), [6,6], [1,1,1], 1, 0);
+		//drawstring(pos+[220,0]+[0,10*players], strconv(0,2,2, "K/D"), [6,6], [1,1,1], 1, 0);
 		players++;
 	}
 
@@ -257,7 +258,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 
 		// ------------------------------------------
 
-		float deaths;
+		float deaths, kd;
 		if (is_scarlet)
 		{
 			for (float j=0; j<8; j++)
@@ -265,6 +266,10 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 				if (name == score_player_alpha[j])
 				{
 					deaths = getstatf(SCORE_DEATHS+j);
+
+					// this stupid process is bc CSQC doesn't have a round() function
+					kd = floor((frags / deaths * 100) + 0.5);
+					if (deaths == 0) kd = (frags > 0) ? 1000 : 0;
 
 					break;
 				}
@@ -293,6 +298,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		if (is_scarlet)
 		{
 			drawstring(pos+[170,0]+[0,10*players], strpad(-3, ftos(deaths)), [8,8], [1,1,1], 1, 0);
+			drawstring(pos+[200,2]+[0,10*players], strconv(0,2,2, ftos(kd)), [6,6], [1,1,1], 1, 0);
 		}
 	}
 };
