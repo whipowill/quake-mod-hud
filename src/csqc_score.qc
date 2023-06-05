@@ -98,7 +98,9 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 
 	pos_x += 80;
 
-	local float is_scarlet = getstatf(GAME_SCARLET);
+	float test = autocvar(cl_hudtest, 0);
+	float is_scarlet = getstatf(GAME_SCARLET);
+	if (test == 2) is_scarlet = 0;
 	if (is_scarlet)
 		pos -= [20,0];
 
@@ -220,6 +222,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 		*/
 
 		// draw key
+		//drawfill([(virtsize_x/2)-148,pos_y], [296,virtsize_y/2], [0,0,0], 0.5, 0);
 		players++;
 		players++;
 		drawstring(pos+[5,10*players], strconv(0,2,2, "Frags"), [6,6], [1,1,1], 1, 0);
@@ -278,22 +281,19 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 
 		// ------------------------------------------
 
-		if (ping != "0")
-			drawstring(pos-[8*6,0]+[0,10*players], strpad(-4, strconv(0,2,2, ping)), [8,8], [1,1,1], 1, 0);
-		if (isspec)
-			drawstring(pos+[4,0]+[0,10*players], "spec", [8,8], [1,1,1], 1, 0);
-		else
+		if (player_localentnum == stof(getplayerkeyvalue(i, "viewentity")))
 		{
-			drawfill(pos+[0,0]+[0,10*players], [40,4], top, 0.75, 0);
-			drawfill(pos+[0,4]+[0,10*players], [40,4], bot, 0.75, 0);
-			drawstring(pos+[8,0]+[0,10*players], strpad(-3, ftos(frags)), [8,8], [1,1,1], 1, 0);
-			if (player_localentnum == stof(getplayerkeyvalue(i, "viewentity")))
-			{
-				drawcharacter(pos-[8,0]+[0,10*players], 0xe00d, [8,8], [1,1,1], 1, 0);
-				drawcharacter(pos+[ 0,0]+[0,10*players], 0xe010, [8,8], [1,1,1], 1, 0);
-				drawcharacter(pos+[32,0]+[0,10*players], 0xe011, [8,8], [1,1,1], 1, 0);
-			}
+			//drawcharacter(pos-[8,0]+[0,10*players], 0xe00d, [8,8], [1,1,1], 1, 0);
+			//drawcharacter(pos+[0,0]+[0,10*players], 0xe010, [8,8], [1,1,1], 1, 0);
+			//drawcharacter(pos+[32,0]+[0,10*players], 0xe011, [8,8], [1,1,1], 1, 0);
+			drawfill([(virtsize_x/2)-140,pos_y-2]+[0,10*players], [280,12], [0,0,0], 0.5, 0);
+			drawfill([(virtsize_x/2)-140,pos_y-2]+[0,10*players], [280,12], bot, 0.25, 0);
 		}
+		if (ping != "0" || test)
+			drawstring(pos-[8*5,0]+[0,10*players], strpad(-4, strconv(0,2,2, ping)), [8,8], [1,1,1], 1, 0);
+		drawfill(pos+[0,0]+[0,10*players], [40,4], top, 0.75, 0);
+		drawfill(pos+[0,4]+[0,10*players], [40,4], bot, 0.75, 0);
+		drawstring(pos+[8,0]+[0,10*players], strpad(-3, ftos(frags)), [8,8], [1,1,1], 1, 0);
 		drawstring(pos+[64,0]+[0,10*players], name, [8,8], [1,1,1], 1, 0);
 		if (is_scarlet)
 		{
