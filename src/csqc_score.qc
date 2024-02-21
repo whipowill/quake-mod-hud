@@ -269,10 +269,7 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 				if (name == score_player_alpha[j])
 				{
 					deaths = getstatf(SCORE_DEATHS+j);
-
-					// this stupid process is bc CSQC doesn't have a round() function
-					kd = floor((frags / deaths * 100) + 0.5);
-					if (deaths == 0) kd = (frags > 0) ? 1000 : 0;
+					kd = frags - deaths;
 
 					break;
 				}
