@@ -48,20 +48,20 @@ static string teamname[14] =
 // happy little color names
 static string teamname[14] =
 {
-	"Titanium White",
-	"Van Dyke Brown",
-	"Mountain Mixture",
-	"Sap Green",
-	"Alizarin Crimson",
-	"Yellow Ochre",
-	"Cadmium Orange",
-	"Flower Pink",
-	"Magenta Mauve",
-	"Dusty Rose",
-	"Dark Sienna",
-	"Phthalo Green",
-	"Indian Yellow",
-	"Prussian Blue",
+	"White Team", // "Titanium White",
+	"Khaki Team", // "Van Dyke Brown",
+	"Azure Team", // "Mountain Mixture",
+	"Green Team", // "Sap Green",
+	"Red Team", // "Alizarin Crimson",
+	"Amber Team", // "Yellow Ochre",
+	"Orange Team", // "Cadmium Orange",
+	"Pink Team", // "Flower Pink",
+	"Indigo Team", // "Magenta Mauve",
+	"Purple Team", // "Dusty Rose",
+	"Vanilla Team", // "Dark Sienna",
+	"Aqua Team", // "Phthalo Green",
+	"Yellow Team", // "Indian Yellow",
+	"Blue Team", // "Prussian Blue",
 };
 
 vector(string picname, float height) Hud_AspectSize =

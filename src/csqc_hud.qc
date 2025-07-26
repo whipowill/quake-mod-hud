@@ -186,7 +186,7 @@ static void(vector pos, float value, float threshhold, string justify, float siz
 		dimensions = '16 16 0';
 	}
 
-	if (value <= threshhold)
+	if (value <= 3) // used to use "threshhold"
 	{
 		//use alternate (red) numbers
 		while(len>0)
@@ -219,7 +219,8 @@ static void(float type, vector pos) Hud_DrawAmmoCount =
 	if (type == 4) // I added this to the game! -whipowill
 	{
 		local float is_grenades = getstatf(GAME_GRENADES);
-		if (!is_grenades) return;
+		local float is_grenades_manual = autocvar(cl_grenades, 0);
+		if (!is_grenades && !is_grenades_manual) return;
 
 		value = getstatf(IT_GRENADES);
 
@@ -253,7 +254,12 @@ static void(float type, vector pos) Hud_DrawAmmoCount =
 		len--;
 		c = str2chr(s, len);
 
-		drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .7, 0);
+		// https://quakewiki.org/w/images/1/1b/Quakefont.gif
+
+		if (value > 0)
+			drawcharacter(pos+len*[8,0,0], (18-'0') + c, [8,8,0], [1,1,1], .7, 0);
+		else
+			drawcharacter(pos+len*[8,0,0], 142, [8,8,0], [1,1,1], .7, 0);
 	}
 };
 
