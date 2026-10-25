@@ -4,8 +4,7 @@ A Quake client-side mod for adding a N64/2021 HUD layout to the game.  This layo
 
 ![2021 HUD style](https://i.imgur.com/T7e9LWg.jpg)
 
-Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.  The features particular to the Quake Rogue expansion and Scarlet Mod should be autodetected and applied.
-
+Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
 
 ## Install
 
@@ -21,6 +20,7 @@ This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), m
 - **Bot Declarations** - when bots are playing, column shows each bot's skill level
 - **Halo Nameplates** - the name of the player appears on the screen when aiming at them
 
+|   |   |   |
 |---|---|---|
 | ![HUD screenshot](https://i.imgur.com/btgPBvc.jpeg) | ![HUD screenshot 3](https://i.imgur.com/zBtmhVk.png) | ![HUD screenshot 4](https://i.imgur.com/4lzaPkw.png) |
 
