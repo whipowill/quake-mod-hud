@@ -23,14 +23,21 @@ float	IT_LIGHTNING			= 1<<6;
 
 // =================================================
 
-// my client vars (33-63) -whipowill
-const float IT_GRENADES = 33;
+// my client vars (38-63; 32-37 are used by Copper 1.30) -whipowill
+const float IT_GRENADES = 38;
+const float GAME_TEAMPLAY = 39;
+const float GAME_GRENADES = 40;
+const float GAME_DEATHS = 41; // server tracks deaths
+const float GAME_ASSISTS = 42; // server tracks assists
+const float GAME_MARKERS = 43; // server sends teammate positions for markers (2 = with names)
+const float GAME_MARKER_SCALE = 44; // marker size times 100
+const float GAME_NAMETAG = 45; // server sends the player under the crosshair (client slot + 1, 0 = nobody)
+const float MARKER_STATS = 200; // 3 stats (forward, right, up) per client slot, 16 slots
 
 // my global vars (128-255) -whipowill
-const float GAME_SCARLET = 128;
-const float GAME_TEAMPLAY = 129;
-const float GAME_GRENADES = 130;
 const float SCORE_DEATHS = 131; // 32 slots
+const float SCORE_ASSISTS = 163; // 32 slots
+const float SCORE_SKILL = 248; // 8 slots (248-255), bot skill + 1 (0 = human)
 
 // =================================================
 
@@ -56,6 +63,29 @@ float 	IT2_RUNE1				= 1<<5;
 float 	IT2_RUNE2				= 1<<6;
 float 	IT2_RUNE3				= 1<<7;
 float 	IT2_RUNE4				= 1<<8;
+
+// Rogue (Dissolution of Eternity) packs its items differently: the ammo bits sit one place
+// lower, and the armor and extra ammo bits are up in the high end (the second half of the stat,
+// which we read as sitems2).  This is the same layout the engine's own status bar uses for Rogue.
+float	RIT_SHELLS				= 1<<7;
+float	RIT_NAILS				= 1<<8;
+float	RIT_ROCKETS				= 1<<9;
+float	RIT_CELLS				= 1<<10;
+float	RIT2_ARMOR1				= 1<<0;
+float	RIT2_ARMOR2				= 1<<1;
+float	RIT2_ARMOR3				= 1<<2;
+float	RIT2_LAVA_NAILS			= 1<<3;
+float	RIT2_PLASMA_AMMO		= 1<<4;
+float	RIT2_MULTI_ROCKETS		= 1<<5;
+
+// true when playing Rogue.  cl_rogue -1 (default) works it out from the game folder,
+// 1 forces it on and 0 forces it off.
+static float Hud_IsRogue()
+{
+	float force = autocvar(cl_rogue, -1);
+	if (force >= 0) return force;
+	return (strstrofs(strtolower(cvar_string("game")), "rogue", 0) >= 0);
+};
 
 // wad image names in array form, for easier access.
 static string number[10] = {
@@ -398,17 +428,32 @@ static void Hud_DrawSBar(vector virtsize)
 	// draw health numbers
 	Hud_DrawLargeValue(pos+[picsize*1.5,0], shealth, 25, "left", 24);
 
-	if (sitems & (IT_INVULNERABILITY|IT_ARMOR1|IT_ARMOR2|IT_ARMOR3))
+	float rogue = Hud_IsRogue();
+	float armor = 0;
+	if (rogue)
+	{
+		if (sitems2 & RIT2_ARMOR3) armor = 3;
+		else if (sitems2 & RIT2_ARMOR2) armor = 2;
+		else if (sitems2 & RIT2_ARMOR1) armor = 1;
+	}
+	else
+	{
+		if (sitems & IT_ARMOR3) armor = 3;
+		else if (sitems & IT_ARMOR2) armor = 2;
+		else if (sitems & IT_ARMOR1) armor = 1;
+	}
+
+	if ((sitems & IT_INVULNERABILITY) || armor)
 	{
 		// draw armor picture
 		pos -= [0,picsize+(buffersize*2)];
 		if (sitems & IT_INVULNERABILITY)
 			Hud_PicOrModel(pos, "gfx/disc", "progs/invulner.mdl", 0, 70);
-		else if (sitems & IT_ARMOR3)
+		else if (armor == 3)
 			Hud_PicOrModel(pos, "gfx/sb_armor3", "progs/armor.mdl", 2, 70);
-		else if (sitems & IT_ARMOR2)
+		else if (armor == 2)
 			Hud_PicOrModel(pos, "gfx/sb_armor2", "progs/armor.mdl", 1, 70);
-		else if (sitems & IT_ARMOR1)
+		else
 			Hud_PicOrModel(pos, "gfx/sb_armor1", "progs/armor.mdl", 0, 70);
 
 		// draw armor numbers
@@ -420,14 +465,24 @@ static void Hud_DrawSBar(vector virtsize)
 
 	// draw ammo picture
 	pos = [virtsize_x-(picsize*2), virtsize_y-(picsize*1.5)];
-	if (sitems & IT_SHELLS)
+	float ammo_shells = (sitems & (rogue ? RIT_SHELLS : IT_SHELLS));
+	float ammo_nails = (sitems & (rogue ? RIT_NAILS : IT_NAILS));
+	float ammo_rockets = (sitems & (rogue ? RIT_ROCKETS : IT_ROCKETS));
+	float ammo_cells = (sitems & (rogue ? RIT_CELLS : IT_CELLS));
+	if (ammo_shells)
 		Hud_PicOrModel(pos, "gfx/sb_shells", "maps/b_shell1.bsp", 0, 80);
-	else if (sitems & IT_NAILS)
+	else if (ammo_nails)
 		Hud_PicOrModel(pos, "gfx/sb_nails", "maps/b_nail1.bsp", 0, 80);
-	else if (sitems & IT_ROCKETS)
+	else if (ammo_rockets)
 		Hud_PicOrModel(pos, "gfx/sb_rocket", "maps/b_rock1.bsp", 0, 80);
-	else if (sitems & IT_CELLS)
+	else if (ammo_cells)
 		Hud_PicOrModel(pos, "gfx/sb_cells", "maps/b_batt1.bsp", 0, 80);
+	else if (rogue && (sitems2 & RIT2_LAVA_NAILS))
+		drawpic(pos, "gfx/r_ammolava", '24 24 0', '1 1 1', 1, 0);
+	else if (rogue && (sitems2 & RIT2_PLASMA_AMMO))
+		drawpic(pos, "gfx/r_ammomulti", '24 24 0', '1 1 1', 1, 0);
+	else if (rogue && (sitems2 & RIT2_MULTI_ROCKETS))
+		drawpic(pos, "gfx/r_ammoplasma", '24 24 0', '1 1 1', 1, 0);
 
 	// draw ammo numbers
 	Hud_DrawLargeValue(pos-[(picsize*0.5),0], getstatf(STAT_AMMO), 10, "right", 24);
@@ -639,10 +694,104 @@ float(float save, float take, vector dir) CSQC_Parse_Damage =
 	return FALSE;	//let the engine handle any red tints etc
 };
 
+// Draw a marker over each teammate's head, visible through walls.  This HUD-only CSQC can't
+// see other players, so the server sends the direction to each teammate (forward, right and up
+// components, scaled to +-1000) and we turn that into a screen position using the player's fov.
+static void(vector virtsize) Hud_DrawTeamMarkers =
+{
+	float mode = getstatf(GAME_MARKERS);
+	if (!mode) return; // 1 = markers, 2 = markers with names
+
+	// fov is for a 4:3 screen, so widen it for the real aspect ratio (same as the engine does)
+	float halffov = autocvar(fov, 90) * 0.5 * (3.14159265 / 180);
+	float tanhalf = (sin(halffov) / cos(halffov)) * 0.75 * (virtsize_x / virtsize_y);
+	float half = virtsize_x * 0.5;
+	float sc = getstatf(GAME_MARKER_SCALE) / 100; // marker size
+	if (sc <= 0) sc = 1;
+
+	for (float i = 0; i < 16; i++)
+	{
+		float f = getstatf(MARKER_STATS + (3 * i));
+		if (f <= 0) continue; // no marker, or behind us
+
+		float x = (virtsize_x * 0.5) + (getstatf(MARKER_STATS + (3 * i) + 1) / f) / tanhalf * half;
+		float y = (virtsize_y * 0.5) - (getstatf(MARKER_STATS + (3 * i) + 2) / f) / tanhalf * half;
+
+		// keep it on screen so you can still tell which way they are
+		if (x < 12) x = 12;
+		if (x > virtsize_x - 12) x = virtsize_x - 12;
+		if (y < 24) y = 24;
+		if (y > virtsize_y - 12) y = virtsize_y - 12;
+
+		vector col = stov(getplayerkeyvalue(i, "bottomcolor_rgb"));
+		string name = getplayerkeyvalue(i, "name");
+		float w = strlen(name) * 6 * sc;
+
+		if (mode >= 2)
+		{
+			drawstring([x - (w * 0.5) + 1, y - (19 * sc)], name, [6 * sc, 6 * sc], [0,0,0], 0.8, 0);
+			drawstring([x - (w * 0.5), y - (20 * sc)], name, [6 * sc, 6 * sc], [1,1,1], 1, 0);
+		}
+		drawfill([x - (6 * sc), y - (13 * sc)], [12 * sc, 4 * sc], [0,0,0], 0.8, 0);
+		drawfill([x - (4 * sc), y - (10 * sc)], [8 * sc, 4 * sc], [0,0,0], 0.8, 0);
+		drawfill([x - (2 * sc), y - (7 * sc)], [4 * sc, 4 * sc], [0,0,0], 0.8, 0);
+		drawfill([x - (5 * sc), y - (12 * sc)], [10 * sc, 2 * sc], col, 1, 0);
+		drawfill([x - (3 * sc), y - (10 * sc)], [6 * sc, 2 * sc], col, 1, 0);
+		drawfill([x - (1 * sc), y - (8 * sc)], [2 * sc, 2 * sc], col, 1, 0);
+	}
+};
+
+// Halo-style nametag: the server works out who is under the crosshair (this HUD-only CSQC
+// can't see other players) and we print their name just above it.  The name fades in when you
+// aim at someone, stays a moment after you look away, then fades out.
+static float nt_who;    // client slot + 1 of the player being shown
+static float nt_seen;   // last time the server said that player was under the crosshair
+static float nt_start;  // when the name started fading in
+static void(vector virtsize) Hud_DrawNameTag =
+{
+	float hold = 0.5;     // seconds the name stays at full strength after you look away
+	float fadein = 0.2;   // seconds to fade in
+	float fadeout = 0.5;  // seconds to fade out after the hold
+
+	float who = getstatf(GAME_NAMETAG);
+	if (who > 0)
+	{
+		// a different player (or nobody was showing): start the fade in again
+		if (who != nt_who)
+			nt_start = time;
+		nt_who = who;
+		nt_seen = time;
+	}
+	if (!nt_who) return;
+
+	float age = time - nt_seen;
+	if (age >= hold + fadeout)
+	{
+		nt_who = 0;
+		return;
+	}
+
+	float alpha = 1;
+	if (age > hold)
+		alpha = 1 - ((age - hold) / fadeout);
+	if (time - nt_start < fadein)
+		alpha = alpha * ((time - nt_start) / fadein);
+	if (alpha <= 0) return;
+
+	string name = getplayerkeyvalue(nt_who - 1, "name");
+	if not (name) return;
+
+	float w = strlen(name) * 8;
+	drawstring([(virtsize_x * 0.5) - (w * 0.5) + 1, (virtsize_y * 0.5) - 69], name, [8,8], [0,0,0], 0.8 * alpha, 0);
+	drawstring([(virtsize_x * 0.5) - (w * 0.5), (virtsize_y * 0.5) - 70], name, [8,8], [1,1,1], alpha, 0);
+};
+
 //Hud entry point!
 //showscores is set if +scores is held (check health yourself).
 void(vector virtsize, float showscores) CSQC_DrawHud =
 {
+	Hud_DrawTeamMarkers(virtsize);
+	Hud_DrawNameTag(virtsize);
 	Hud_Draw(virtsize, showscores);
 };
 
