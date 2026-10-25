@@ -4,8 +4,6 @@ A Quake client-side mod for adding a N64/2021 HUD layout to the game.  This layo
 
 ![2021 HUD style](https://i.imgur.com/T7e9LWg.jpg)
 
-Because this is a client-side mod, it means you can use it alongside other QuakeC mods (``progs.dat``) w/out issue.
-
 ## Install
 
 Simply copy the ``csprogs.dat`` file into your ``id1`` or other mod folder.
@@ -26,10 +24,6 @@ This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), m
 
 ## Commands
 
-In theory you never need to use any of these commands bc the mod will autodetect what you're playing and turn them on or off.
-
-- ``cl_teams 1`` - change scoreboard to teamplay mode (default ``0``, used in [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod)
-- ``cl_grenades 1`` - will show grenades you possess on the HUD (default ``0``, used in [Scarlet](https://github.com/whipowill/quake-mod-scarlet) mod)
 - ``cl_weapons 1`` - will show weapons you possess on the HUD (default ``0``)
 - ``cl_hudtest 1`` - display all icons on the HUD for testing purposes (default ``0``)
 
