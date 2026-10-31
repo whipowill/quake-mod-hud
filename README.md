@@ -14,7 +14,7 @@ This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), m
 
 - **Deaths, Assists & Streak** - extra scoreboard columns, shown when the server tracks them
 - **Teamplay Scoreboard** - team players are grouped and scored together
-- **Teamm Indicators** - a marker in the teammate's color floats over each teammate
+- **Team Indicators** - a marker in the teammate's color floats over each teammate
 - **Bot Declarations** - when bots are playing, column shows each bot's skill level
 - **Halo Nameplates** - the name of the player appears on the screen when aiming at them
 
@@ -34,7 +34,7 @@ This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), m
 	- Tried to fix issues w/ Rogue expansion (untested)
 	- Scarlet Mod
 		- Scoreboard now detects team play and will show team scores
-		- Scoreboard now shows deaths and assists
+		- Scoreboard now shows deaths, assists, and streaks
 		- Teammates have icons that show above their heads
 		- Nameplates show when aiming at a player
 
