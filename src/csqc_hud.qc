@@ -32,12 +32,23 @@ const float GAME_ASSISTS = 42; // server tracks assists
 const float GAME_MARKERS = 43; // server sends teammate positions for markers (2 = with names)
 const float GAME_MARKER_SCALE = 44; // marker size times 100
 const float GAME_NAMETAG = 45; // server sends the player under the crosshair (client slot + 1, 0 = nobody)
+const float GAME_STREAKS = 53; // server tracks each player's best killstreak (the Streak column)
+const float GAME_KILLSTREAK = 46; // kills in a row for the player (0 = none, or the server does not track it)
+const float GAME_KILLSTREAK_LABEL = 47; // what that streak is called: 3 letters in each of 6 stats (47-52)
+
+// Scarlet always sets the streaks stat, so it tells us the server is Scarlet.  The team markers, the name tags, the extra
+// scoreboard columns and the killstreak all stay off on any other server.
+float() Hud_IsScarlet =
+{
+	return getstatf(GAME_STREAKS) != 0;
+};
 const float MARKER_STATS = 200; // 3 stats (forward, right, up) per client slot, 16 slots
 
 // my global vars (128-255) -whipowill
 const float SCORE_DEATHS = 131; // 32 slots
 const float SCORE_ASSISTS = 163; // 32 slots
-const float SCORE_SKILL = 248; // 8 slots (248-255), bot skill + 1 (0 = human)
+const float SCORE_STREAK = 64; // 32 slots (64-95), the best killstreak of each player
+const float SCORE_SKILL = 96; // 16 slots (96-111), bot skill + 1 (0 = human)
 
 // =================================================
 
@@ -699,6 +710,7 @@ float(float save, float take, vector dir) CSQC_Parse_Damage =
 // components, scaled to +-1000) and we turn that into a screen position using the player's fov.
 static void(vector virtsize) Hud_DrawTeamMarkers =
 {
+	if not (Hud_IsScarlet()) return;
 	float mode = getstatf(GAME_MARKERS);
 	if (!mode) return; // 1 = markers, 2 = markers with names
 
@@ -753,7 +765,7 @@ static void(vector virtsize) Hud_DrawNameTag =
 	float fadein = 0.2;   // seconds to fade in
 	float fadeout = 0.5;  // seconds to fade out after the hold
 
-	float who = getstatf(GAME_NAMETAG);
+	float who = Hud_IsScarlet() ? getstatf(GAME_NAMETAG) : 0;
 	if (who > 0)
 	{
 		// a different player (or nobody was showing): start the fade in again
@@ -786,12 +798,91 @@ static void(vector virtsize) Hud_DrawNameTag =
 	drawstring([(virtsize_x * 0.5) - (w * 0.5), (virtsize_y * 0.5) - 70], name, [8,8], [1,1,1], alpha, 0);
 };
 
+// Killstreak: a yellow dot for every rank (5 kills) at the top center, and under them the label (what the server calls
+// the streak), which flashes and fades under them when a rank is earned.  The server only tells us this player's own streak.
+static float ks_last;   // the streak last frame
+static float ks_flash;  // when it last went up
+
+// the label comes as letters packed three to a stat, which works on any engine
+static string() Hud_KillstreakLabel =
+{
+	string label = "";
+	for (float i = 0; i < 6; i++)
+	{
+		float v = getstatf(GAME_KILLSTREAK_LABEL + i);
+		for (float j = 0; j < 3; j++)
+		{
+			float c = floor(v / (j == 0 ? 1 : (j == 1 ? 256 : 65536))) & 255;
+			if (c) label = strcat(label, chr2str(c));
+		}
+	}
+	return label;
+};
+
+static void(vector virtsize) Hud_DrawKillstreak =
+{
+	if (autocvar(cl_killstreak, 1) <= 0) return; // 0 = off
+	if not (Hud_IsScarlet() || autocvar(cl_hudtest, 0)) return; // Scarlet only
+
+	float streak = getstatf(GAME_KILLSTREAK);
+	string label = Hud_KillstreakLabel();
+	if (autocvar(cl_hudtest, 0))
+	{
+		streak = 5 * (1 + (floor(time / 2) & 7)); // test: steps through 5, 10 ... 40 kills, two seconds each
+		label = "Streak Label";
+	}
+	// a dot for every rank (every 5 kills), up to 8
+	float dots = floor(streak / 5);
+	if (dots > 8) dots = 8;
+	if (dots > ks_last) ks_flash = time; // a new rank: the label shows
+	ks_last = dots;
+	if (dots < 1) return;
+
+	// the dots are always there, the bullet of the console font (character 0x05, the white one, so the color tints it red)
+	float y = 10; // top center
+	float x = (virtsize_x - (dots * 8)) * 0.5;
+	for (float i = 0; i < dots; i++)
+	{
+		drawcharacter([x + (i * 8) + 1, y + 1], 0xe005, [8,8], [0,0,0], 0.8, 0);
+		drawcharacter([x + (i * 8), y], 0xe005, [8,8], [1,0.1,0.1], 1, 0);
+	}
+
+	// the label (it flashes and fades under the dots when a rank is earned) is hidden for now:
+	//// the label, above the dots: it flashes for a moment when the rank is earned, then fades away
+	//float age = time - ks_flash;
+	//if (label == "" || age > 3) return;
+	//float alpha = 1;
+	//if (age < 0.4)
+	//	alpha = (floor(age / 0.1) & 1) ? 0.35 : 1; // flash
+	//else
+	//	alpha = 1 - ((age - 0.4) / 2.6); // fade
+	//float size = 10;
+	//float w = strlen(label) * size;
+	//drawstring([(virtsize_x - w) * 0.5 + 1, y + 12 + 1], label, [size, size], [0,0,0], 0.8 * alpha, 0);
+	//drawstring([(virtsize_x - w) * 0.5, y + 12], label, [size, size], [1, 0.9, 0.7], alpha, 0);
+};
+
+// The real time of day (no seconds) in the top right corner.  cl_showclock 1 = 24 hour, 2 = 12 hour.  It works on any server.
+static void(vector virtsize) Hud_DrawClock =
+{
+	float mode = autocvar(cl_showclock, 0);
+	if (mode <= 0) return;
+
+	string t = (mode == 2) ? strftime(TRUE, "%I:%M %p") : strftime(TRUE, "%H:%M");
+	if not (t) return;
+	float w = strlen(t) * 8;
+	drawstring([virtsize_x - w, 0], t, [8,8], [1,1,1], 1, 0); // the very corner, no shadow
+};
+
 //Hud entry point!
 //showscores is set if +scores is held (check health yourself).
 void(vector virtsize, float showscores) CSQC_DrawHud =
 {
 	Hud_DrawTeamMarkers(virtsize);
 	Hud_DrawNameTag(virtsize);
+	Hud_DrawClock(virtsize);
+	if not (showscores)
+		Hud_DrawKillstreak(virtsize);
 	Hud_Draw(virtsize, showscores);
 };
 

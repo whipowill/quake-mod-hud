@@ -100,14 +100,16 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 
 	float test = autocvar(cl_hudtest, 0);
 	// only show the deaths and assists columns when the server says it tracks them
-	float has_deaths = getstatf(GAME_DEATHS);
-	float has_assists = getstatf(GAME_ASSISTS);
+	float has_deaths = Hud_IsScarlet() ? getstatf(GAME_DEATHS) : 0; // Scarlet only
+	float has_assists = Hud_IsScarlet() ? getstatf(GAME_ASSISTS) : 0;
+	float has_streak = Hud_IsScarlet();
 	if (test == 2)
 	{
 		has_deaths = 0;
 		has_assists = 0;
+		has_streak = 0;
 	}
-	float is_scarlet = has_deaths || has_assists;
+	float is_scarlet = Hud_IsScarlet();
 
 	// measure the content so we can center it: the names set the width of the name column,
 	// and pings add a column to the left of the frags
@@ -122,17 +124,19 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 	}
 	// bots get a Bot column (their skill, 0-3) at the far left
 	float has_bots = FALSE;
-	for (float sk=0; sk<8; sk++)
+	for (float sk=0; sk<16; sk++)
 		if (getstatf(SCORE_SKILL+sk)) has_bots = TRUE;
 	has_bots = has_bots && is_scarlet;
 	float name_right = 64 + (name_chars * 8);
 
-	// column positions, assists then deaths then K/D, just past the longest name
-	float col_assists = name_right + 10;
-	if (col_assists < 170) col_assists = 170;
+	// column positions, streak then assists then deaths then K/D, just past the longest name
+	float col_streak = name_right + 10;
+	if (col_streak < 170) col_streak = 170;
+	float col_assists = col_streak + (has_streak ? 48 : 0);
 	float col_deaths = col_assists + (has_assists ? 48 : 0);
 	float col_kd = col_deaths + (has_deaths ? 42 : 0);
 	float right_edge = name_right;
+	if (has_streak) right_edge = col_streak + 42;
 	if (has_assists) right_edge = col_assists + 42;
 	if (has_deaths) right_edge = col_kd + 24;
 
@@ -176,83 +180,29 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 	// alphabetize the list of players (so we can ID players from score stats from server)
 	if (is_scarlet)
 	{
-		string score_player_alpha[8];
+		string score_player_alpha[16];
 
-        // reset player order
-        score_player_alpha[7] = "ZZZZZZZ";
-        score_player_alpha[6] = "ZZZZZZZ";
-        score_player_alpha[5] = "ZZZZZZZ";
-        score_player_alpha[4] = "ZZZZZZZ";
-        score_player_alpha[3] = "ZZZZZZZ";
-        score_player_alpha[2] = "ZZZZZZZ";
-        score_player_alpha[1] = "ZZZZZZZ";
-        score_player_alpha[0] = "ZZZZZZZ";
+		// reset player order
+		float k;
+		for (k=0; k<16; k++)
+			score_player_alpha[k] = "ZZZZZZZ";
 
 		for (float i=-1; ; i--)
 		{
 			string name = getplayerkeyvalue(i, "name");
 			if not (name) break;
 
-			if (strcasecmp(name, score_player_alpha[0]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = score_player_alpha[5];
-                    score_player_alpha[5] = score_player_alpha[4];
-                    score_player_alpha[4] = score_player_alpha[3];
-                    score_player_alpha[3] = score_player_alpha[2];
-                    score_player_alpha[2] = score_player_alpha[1];
-                    score_player_alpha[1] = score_player_alpha[0];
-                    score_player_alpha[0] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[1]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = score_player_alpha[5];
-                    score_player_alpha[5] = score_player_alpha[4];
-                    score_player_alpha[4] = score_player_alpha[3];
-                    score_player_alpha[3] = score_player_alpha[2];
-                    score_player_alpha[2] = score_player_alpha[1];
-                    score_player_alpha[1] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[2]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = score_player_alpha[5];
-                    score_player_alpha[5] = score_player_alpha[4];
-                    score_player_alpha[4] = score_player_alpha[3];
-                    score_player_alpha[3] = score_player_alpha[2];
-                    score_player_alpha[2] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[3]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = score_player_alpha[5];
-                    score_player_alpha[5] = score_player_alpha[4];
-                    score_player_alpha[4] = score_player_alpha[3];
-                    score_player_alpha[3] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[4]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = score_player_alpha[5];
-                    score_player_alpha[5] = score_player_alpha[4];
-                    score_player_alpha[4] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[5]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = score_player_alpha[5];
-                    score_player_alpha[5] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[6]) < 0)
-            {
-                    score_player_alpha[7] = score_player_alpha[6];
-                    score_player_alpha[6] = name;
-            }
-            else if (strcasecmp(name, score_player_alpha[7]) < 0)
-            {
-                    score_player_alpha[7] = name;
-            }
+			// in front of the first one that sorts after it, the same order the server numbers the players in
+			for (k=0; k<16; k++)
+			{
+				if (strcasecmp(name, score_player_alpha[k]) < 0)
+				{
+					for (float m=15; m>k; m--)
+						score_player_alpha[m] = score_player_alpha[m-1];
+					score_player_alpha[k] = name;
+					break;
+				}
+			}
 		}
 
 		// print sorted players to screen for testing
@@ -277,6 +227,8 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			drawstring(pos+[col_deaths,0]+[0,10*players], strconv(0,2,2, "Deaths"), [6,6], [1,1,1], 1, 0);
 		if (has_deaths)
 			drawstring(pos+[col_kd,0]+[0,10*players], strconv(0,2,2, "K/D"), [6,6], [1,1,1], 1, 0);
+		if (has_streak)
+			drawstring(pos+[col_streak,0]+[0,10*players], strconv(0,2,2, "Streak"), [6,6], [1,1,1], 1, 0);
 		if (has_bots)
 			drawstring(pos+[col_bot+2,0]+[0,10*players], strconv(0,2,2, "Bot"), [6,6], [1,1,1], 1, 0);
 		//drawstring(pos+[220,0]+[0,10*players], strconv(0,2,2, "K/D"), [6,6], [1,1,1], 1, 0);
@@ -312,17 +264,18 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 
 		// ------------------------------------------
 
-		float deaths, assists, kd, skill;
+		float deaths, assists, kd, skill, streak;
 		skill = 0;
 		string kdstr;
 		if (is_scarlet)
 		{
-			for (float j=0; j<8; j++)
+			for (float j=0; j<16; j++)
 			{
 				if (name == score_player_alpha[j])
 				{
 					deaths = getstatf(SCORE_DEATHS+j);
 					assists = getstatf(SCORE_ASSISTS+j);
+					streak = getstatf(SCORE_STREAK+j);
 					skill = getstatf(SCORE_SKILL+j);
 					kd = frags - deaths;
 
@@ -361,6 +314,8 @@ void(vector virtmin, vector virtsize) Hud_DeathmatchScoreboard =
 			}
 			if (has_assists)
 				drawstring(pos+[col_assists+9,0]+[0,10*players], strpad(-3, ftos(assists)), [8,8], [1,1,1], 1, 0);
+			if (has_streak)
+				drawstring(pos+[col_streak+9,0]+[0,10*players], strpad(-3, ftos(streak)), [8,8], [1,1,1], 1, 0);
 			if (has_deaths)
 			{
 				drawstring(pos+[col_deaths+6,0]+[0,10*players], strpad(-3, ftos(deaths)), [8,8], [1,1,1], 1, 0);
