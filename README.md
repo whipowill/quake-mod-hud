@@ -10,11 +10,11 @@ Simply copy the ``csprogs.dat`` file into your ``id1`` or other mod folder.
 
 ## Scarlet Mod
 
-This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), my personal Quake perfection mod focused on blood, balance, bots, and multiplayer arena.  Scarlet tells the HUD what it supports, and the HUD turns each feature on by itself.  There is nothing to configure on your end, and on any other server these features stay hidden.
+This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), my Quake enhancement mod focused on blood, balance, bots, and multiplayer arena.  Scarlet tells the HUD what it supports, and the HUD turns each feature on by itself.  There is nothing to configure on your end, and on any other server these features stay hidden.
 
-- **Deaths & Assists** - extra scoreboard columns, shown when the server tracks them
+- **Deaths, Assists & Streak** - extra scoreboard columns, shown when the server tracks them
 - **Teamplay Scoreboard** - team players are grouped and scored together
-- **Teammate Markers** - a marker in the teammate's color floats over each teammate
+- **Teamm Indicators** - a marker in the teammate's color floats over each teammate
 - **Bot Declarations** - when bots are playing, column shows each bot's skill level
 - **Halo Nameplates** - the name of the player appears on the screen when aiming at them
 
@@ -25,7 +25,8 @@ This HUD pairs with [Scarlet](https://github.com/whipowill/quake-mod-scarlet), m
 ## Commands
 
 - ``cl_weapons 1`` - will show weapons you possess on the HUD (default ``0``)
-- ``cl_hudtest 1`` - display all icons on the HUD for testing purposes (default ``0``)
+- ``cl_showclock 1`` - shows the real time of day in the top right corner: ``1`` is 24 hour, ``2`` is 12 hour (default ``0``, works on any server)
+- ``cl_hudtest 1`` - display all icons on the HUD for testing purposes (the killstreak steps through 5 to 40 kills) (default ``0``)
 
 ## Changelog
 
